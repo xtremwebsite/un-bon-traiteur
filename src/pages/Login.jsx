@@ -42,7 +42,7 @@ export default function Login() {
       footer={
         <>
           Pas encore de compte ?{" "}
-          <Link to="/register" className="text-primary font-medium hover:underline">
+          <Link to={`/register?next=${encodeURIComponent(new URLSearchParams(window.location.search).get("next") || "/")}`} className="text-primary font-medium hover:underline">
             Créer un compte
           </Link>
         </>

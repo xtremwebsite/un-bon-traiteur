@@ -28,7 +28,7 @@ export default function Search() {
   const events = useMemo(() => [...new Set(items.flatMap(x => x.event_types || []))].sort(), [items]);
   const shown = useMemo(() => {
     const city = filters.city.trim().toLowerCase();
-    const result = items.filter(x => (!city || `${x.city} ${x.postal_code || ''}`.toLowerCase().includes(city)) && (!filters.event || (x.event_types || []).includes(filters.event)) && (!filters.maxPrice || x.price_from_per_person <= Number(filters.maxPrice)) && (!filters.rating || (x.google_rating || 0) >= Number(filters.rating)) && (!filters.verified || x.verified) && (!filters.geo || (x.latitude && x.longitude && distance(filters.geo, x) <= Number(filters.radius))));
+    const result = items.filter(x => (!city || `${x.city} ${x.postal_code || ''}`.toLowerCase().includes(city)) && (!filters.event || (x.event_types || []).includes(filters.event)) && (!filters.maxPrice || (typeof x.price_from_per_person === 'number' && x.price_from_per_person <= Number(filters.maxPrice))) && (!filters.rating || (x.google_rating || 0) >= Number(filters.rating)) && (!filters.verified || x.verified) && (!filters.geo || (x.latitude && x.longitude && distance(filters.geo, x) <= Number(filters.radius))));
     return [...result].sort((a, b) => sort === 'price' ? a.price_from_per_person - b.price_from_per_person : sort === 'rating' ? (b.google_rating || 0) - (a.google_rating || 0) : sort === 'recent' ? new Date(b.updated_date) - new Date(a.updated_date) : Number(b.verified) - Number(a.verified) || (b.google_rating || 0) - (a.google_rating || 0));
   }, [items, filters, sort]);
   const locate = () => {

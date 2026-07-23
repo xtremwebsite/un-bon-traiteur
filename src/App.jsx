@@ -22,6 +22,8 @@ import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import Admin from '@/pages/Admin';
+import ProRegistration from '@/pages/ProRegistration';
+import ProDashboard from '@/pages/ProDashboard';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -56,6 +58,12 @@ const AuthenticatedApp = () => {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=/admin" replace />} />}>
         <Route path="/admin" element={<Admin />} />
+      </Route>
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=/inscription-traiteur" replace />} />}>
+        <Route path="/inscription-traiteur" element={<ProRegistration />} />
+      </Route>
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=/tableau-de-bord-traiteur" replace />} />}>
+        <Route path="/tableau-de-bord-traiteur" element={<ProDashboard />} />
       </Route>
       <Route path="/" element={<Home />} />
       <Route path="/recherche" element={<Search />} />

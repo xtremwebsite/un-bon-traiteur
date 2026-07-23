@@ -13,14 +13,14 @@ export default function CatererCard({ caterer }) {
     </div>
     <div className="p-5 pt-10">
       <div className="flex items-start justify-between gap-2"><h2 className="font-heading text-xl font-bold">{caterer.business_name}</h2>{caterer.verified && <BadgeCheck className="text-primary" aria-label="Professionnel vérifié" />}</div>
-      {caterer.demo && <span className="mt-2 inline-block rounded-full bg-muted px-2 py-1 text-xs">Démonstration · non indexable</span>}
+      {caterer.demo && <span className="mt-2 inline-block rounded-full bg-muted px-2 py-1 text-xs">{caterer.profile_origin === 'public_source' ? 'Informations publiques · fiche non revendiquée' : 'Démonstration · non indexable'}</span>}
       <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{caterer.description}</p>
       <div className="mt-4 flex flex-wrap gap-3 text-sm">
         <span className="flex gap-1"><MapPin size={16} />{caterer.city}</span>
-        <span className="flex gap-1"><Users size={16} />{caterer.min_guests}–{caterer.max_guests}</span>
+        {caterer.min_guests && caterer.max_guests && <span className="flex gap-1"><Users size={16} />{caterer.min_guests}–{caterer.max_guests}</span>}
         {caterer.google_rating && <span className="flex gap-1 font-semibold"><Star size={16} className="fill-primary text-primary" />{caterer.google_rating}</span>}
       </div>
-      <div className="mt-5 flex items-center justify-between gap-3"><strong>Dès {caterer.price_from_per_person} € / pers.</strong><Link className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground" to={`/traiteurs/${caterer.slug}`}>Voir la fiche</Link></div>
+      <div className="mt-5 flex items-center justify-between gap-3"><strong>{caterer.price_from_per_person ? `Dès ${caterer.price_from_per_person} € / pers.` : 'Prix sur devis'}</strong><Link className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground" to={`/traiteurs/${caterer.slug}`}>Voir la fiche</Link></div>
     </div>
   </article>;
 }
