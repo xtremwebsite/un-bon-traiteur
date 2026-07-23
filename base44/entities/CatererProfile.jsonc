@@ -106,6 +106,15 @@
       "items": {
         "type": "string"
       }
+    },
+    "google_rating": {
+      "type": "number"
+    },
+    "google_review_count": {
+      "type": "number"
+    },
+    "google_reviews_url": {
+      "type": "string"
     }
   },
   "required": [

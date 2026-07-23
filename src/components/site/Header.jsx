@@ -7,8 +7,7 @@ export default function Header() {
       <Link to="/" className="font-heading text-xl font-bold text-primary">Un Bon Traiteur</Link>
       <nav className="ml-auto hidden items-center gap-5 text-sm font-medium lg:flex">
         <Link to="/recherche">Trouver un traiteur</Link><Link to="/urgence-traiteur">Demande urgente</Link>
-        <Link to="/guides">Conseils</Link><Link to="/tarifs-professionnels">Tarifs professionnels</Link>
-        <Link to="/espace-traiteur">Espace traiteur</Link><span>Connexion</span>
+        <Link to="/guides">Conseils</Link><Link to="/espace-traiteur">Espace traiteur</Link><span>Connexion</span>
       </nav>
       <div className="ml-auto flex gap-2 lg:hidden">
         <Link aria-label="Rechercher" to="/recherche" className="rounded-full p-2 text-primary"><Search /></Link>

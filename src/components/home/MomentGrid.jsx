@@ -1,0 +1,13 @@
+import { Link } from 'react-router-dom';
+import { ArrowUpRight } from 'lucide-react';
+import { Image } from '@/components/ui/image';
+
+const moments=[
+  ['Mariage','Célébrations élégantes','https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=900&q=85'],
+  ['Anniversaire','Instants mémorables','https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=900&q=85'],
+  ['Cocktail','Élégance contemporaine','https://images.unsplash.com/photo-1470337458703-46ad1756a1875?auto=format&fit=crop&w=900&q=85'],
+  ['Brunch','Matins gourmands','https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=900&q=85'],
+  ['Entreprise','Expériences professionnelles','https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=900&q=85'],
+  ['Réception privée','Moments d’exception','https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&q=85']
+];
+export default function MomentGrid(){return <section className="relative overflow-hidden bg-primary py-16 text-primary-foreground"><div className="absolute -left-24 top-10 h-72 w-72 rounded-full bg-destructive/30 blur-3xl"/><div className="absolute -right-20 bottom-0 h-80 w-80 rounded-full bg-secondary/20 blur-3xl"/><div className="relative mx-auto max-w-7xl px-4"><p className="font-semibold text-destructive">Imaginez votre événement</p><h2 className="mt-2 font-heading text-3xl font-bold md:text-4xl">Pour chaque moment à célébrer</h2><div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{moments.map(([name,tagline,src])=><Link key={name} to={`/recherche?event=${name}`} className="group relative h-64 overflow-hidden rounded-3xl border border-primary-foreground/20 bg-primary-foreground/10 shadow-2xl backdrop-blur-xl"><Image src={src} alt={`Traiteur pour ${name.toLowerCase()}`} className="absolute inset-0 h-full w-full transition duration-500 group-hover:scale-105"/><div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/20 to-transparent"/><div className="absolute inset-x-3 bottom-3 flex items-end justify-between rounded-2xl border border-primary-foreground/20 bg-primary/40 p-4 backdrop-blur-xl"><div><p className="text-xs opacity-75">{tagline}</p><h3 className="mt-1 text-xl font-bold">{name}</h3></div><span className="rounded-full bg-primary-foreground/15 p-2"><ArrowUpRight size={19}/></span></div></Link>)}</div></div></section>}

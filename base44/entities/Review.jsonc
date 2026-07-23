@@ -1,0 +1,79 @@
+{
+  "name": "Review",
+  "type": "object",
+  "properties": {
+    "caterer_id": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "internal",
+        "google"
+      ],
+      "default": "internal"
+    },
+    "reviewer_name": {
+      "type": "string"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "title": {
+      "type": "string"
+    },
+    "comment": {
+      "type": "string"
+    },
+    "review_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "published",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "verified_booking": {
+      "type": "boolean",
+      "default": false
+    },
+    "source_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caterer_id",
+    "source",
+    "reviewer_name",
+    "rating",
+    "comment",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "data.status": "published"
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

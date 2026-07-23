@@ -11,7 +11,6 @@ import Search from '@/pages/Search';
 import CatererProfile from '@/pages/CatererProfile';
 import QuoteRequest from '@/pages/QuoteRequest';
 import UrgentRequest from '@/pages/UrgentRequest';
-import Pricing from '@/pages/Pricing';
 import Ranking from '@/pages/Ranking';
 import Guides from '@/pages/Guides';
 import ProSpace from '@/pages/ProSpace';
@@ -50,7 +49,6 @@ const AuthenticatedApp = () => {
       <Route path="/traiteurs/:slug" element={<CatererProfile />} />
       <Route path="/demande-devis" element={<QuoteRequest />} />
       <Route path="/urgence-traiteur" element={<UrgentRequest />} />
-      <Route path="/tarifs-professionnels" element={<Pricing />} />
       <Route path="/referencement" element={<Ranking />} />
       <Route path="/guides" element={<Guides />} />
       <Route path="/espace-traiteur" element={<ProSpace />} />
