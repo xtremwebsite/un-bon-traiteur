@@ -98,6 +98,9 @@
     "years_experience": {
       "type": "number"
     },
+    "logo_url": {
+      "type": "string"
+    },
     "hero_image": {
       "type": "string"
     },

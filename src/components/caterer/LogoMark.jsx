@@ -1,0 +1,3 @@
+import { Image } from '@/components/ui/image';
+const sizes={sm:'h-14 w-14 text-base',lg:'h-20 w-20 text-xl'};
+export default function LogoMark({caterer,size='sm',className=''}){const initials=caterer.business_name.split(' ').filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase();return <div className={`${sizes[size]} ${className} flex shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-card bg-card font-heading font-bold text-primary shadow-lg`}>{caterer.logo_url?<Image src={caterer.logo_url} alt={`Logo ${caterer.business_name}`} className="h-full w-full" fittingType="fit"/>:<span aria-label={`Initiales de ${caterer.business_name}`}>{initials}</span>}</div>}
