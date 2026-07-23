@@ -1,0 +1,4 @@
+import Header from '@/components/site/Header';
+import Footer from '@/components/site/Footer';
+import RequestForm from '@/components/forms/RequestForm';
+export default function UrgentRequest(){return <><Header/><main className="mx-auto max-w-3xl px-4 py-12"><p className="font-semibold text-destructive">Traitement prioritaire</p><h1 className="mt-2 font-heading text-4xl font-bold">Besoin d’un traiteur en urgence ?</h1><p className="mb-8 mt-3 text-muted-foreground">Votre traiteur vous a lâché ou votre événement approche ? Décrivez votre besoin et alertez les professionnels disponibles autour de vous.</p><RequestForm urgent/></main><Footer/></>;}

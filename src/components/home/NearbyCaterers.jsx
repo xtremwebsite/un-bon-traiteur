@@ -1,0 +1,4 @@
+import { useEffect,useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import CatererCard from '@/components/site/CatererCard';
+export default function NearbyCaterers(){const[items,setItems]=useState([]);useEffect(()=>{base44.entities.CatererProfile.filter({published:true},'-updated_date',3).then(setItems)},[]);return <section className="mx-auto max-w-7xl px-4 py-14"><div className="flex items-end justify-between"><div><p className="font-semibold text-destructive">Profils de démonstration</p><h2 className="font-heading text-3xl font-bold">Traiteurs à découvrir</h2></div></div><div className="mt-7 grid gap-5 md:grid-cols-3">{items.map(x=><CatererCard key={x.id} caterer={x}/>)}</div></section>}

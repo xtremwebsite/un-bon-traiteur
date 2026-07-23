@@ -1,0 +1,131 @@
+{
+  "name": "UrgentRequest",
+  "type": "object",
+  "properties": {
+    "reference": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "to_verify",
+        "validated",
+        "broadcast",
+        "responses_received",
+        "fulfilled",
+        "expired",
+        "cancelled",
+        "rejected"
+      ],
+      "default": "to_verify"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "event_time": {
+      "type": "string"
+    },
+    "urgency_level": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "radius_km": {
+      "type": "number"
+    },
+    "event_type": {
+      "type": "string"
+    },
+    "guest_count": {
+      "type": "number"
+    },
+    "budget": {
+      "type": "number"
+    },
+    "service_need": {
+      "type": "string"
+    },
+    "previous_caterer_unavailable": {
+      "type": "boolean"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "response_deadline": {
+      "type": "string"
+    },
+    "auto_expand_radius": {
+      "type": "boolean"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "transmission_consent": {
+      "type": "boolean"
+    },
+    "professionals_alerted": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "reference",
+    "event_date",
+    "location",
+    "event_type",
+    "guest_count",
+    "email",
+    "phone",
+    "transmission_consent"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

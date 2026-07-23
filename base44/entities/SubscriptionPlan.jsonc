@@ -1,0 +1,84 @@
+{
+  "name": "SubscriptionPlan",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "monthly_price_ex_vat": {
+      "type": "number"
+    },
+    "annual_price_ex_vat": {
+      "type": "number"
+    },
+    "vat_rate": {
+      "type": "number"
+    },
+    "description": {
+      "type": "string"
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "limits": {
+      "type": "object"
+    },
+    "display_order": {
+      "type": "number"
+    },
+    "highlighted": {
+      "type": "boolean"
+    },
+    "trial_days": {
+      "type": "number"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "demo": {
+      "type": "boolean"
+    },
+    "price_confirmed": {
+      "type": "boolean",
+      "default": false
+    },
+    "stripe_product_id": {
+      "type": "string"
+    },
+    "stripe_monthly_price_id": {
+      "type": "string"
+    },
+    "stripe_annual_price_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "slug",
+    "monthly_price_ex_vat"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

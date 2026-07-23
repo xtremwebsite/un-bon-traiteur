@@ -1,0 +1,53 @@
+{
+  "name": "LegalPage",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "validation_notice": {
+      "type": "string",
+      "default": "\u00c0 faire valider juridiquement avant publication"
+    },
+    "published": {
+      "type": "boolean",
+      "default": false
+    },
+    "version": {
+      "type": "string"
+    },
+    "updated_at_label": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "slug"
+  ],
+  "rls": {
+    "read": {
+      "data.published": true
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "name": "QuoteRequest",
+  "type": "object",
+  "properties": {
+    "reference": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "submitted",
+        "matched",
+        "responses_received",
+        "closed",
+        "cancelled"
+      ],
+      "default": "submitted"
+    },
+    "caterer_id": {
+      "type": "string"
+    },
+    "event_type": {
+      "type": "string"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "event_time": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "guest_count": {
+      "type": "number"
+    },
+    "budget_type": {
+      "type": "string",
+      "enum": [
+        "total",
+        "per_person"
+      ]
+    },
+    "budget": {
+      "type": "number"
+    },
+    "format": {
+      "type": "string"
+    },
+    "cuisine": {
+      "type": "string"
+    },
+    "dietary_needs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "services": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "message": {
+      "type": "string"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "contact_preference": {
+      "type": "string"
+    },
+    "marketing_consent": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "reference",
+    "event_type",
+    "event_date",
+    "location",
+    "guest_count",
+    "first_name",
+    "email"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

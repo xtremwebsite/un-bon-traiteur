@@ -1,0 +1,14 @@
+import { useEffect, useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { SlidersHorizontal } from 'lucide-react';
+import Header from '@/components/site/Header';
+import Footer from '@/components/site/Footer';
+import CatererCard from '@/components/site/CatererCard';
+
+export default function Search() {
+  const params = new URLSearchParams(window.location.search);
+  const [items,setItems]=useState([]); const [loading,setLoading]=useState(true); const [verified,setVerified]=useState(false);
+  useEffect(()=>{ base44.entities.CatererProfile.filter({ published:true },'-updated_date',24).then(setItems).finally(()=>setLoading(false)); },[]);
+  const shown=items.filter(x=>!verified||x.verified);
+  return <><Header/><main className="mx-auto max-w-7xl px-4 py-10"><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm text-muted-foreground">{params.get('event')||'Tous les événements'} · {params.get('location')||'France'}</p><h1 className="font-heading text-3xl font-bold">Traiteurs disponibles</h1></div><select className="h-11 rounded-lg border bg-background px-3" aria-label="Trier"><option>Recommandés</option><option>Prix croissant</option><option>Nouveautés</option></select></div><div className="mt-8 grid gap-8 lg:grid-cols-[260px_1fr]"><aside className="h-fit rounded-2xl border bg-card p-5"><h2 className="flex items-center gap-2 font-bold"><SlidersHorizontal size={18}/>Filtres</h2><label className="mt-5 block text-sm font-semibold">Distance<select className="mt-2 h-10 w-full rounded-lg border bg-background px-2"><option>25 km</option><option>50 km</option><option>100 km</option><option>Toute la région</option></select></label><label className="mt-5 flex items-center gap-2 text-sm"><input type="checkbox" checked={verified} onChange={e=>setVerified(e.target.checked)}/>Professionnel vérifié</label><button onClick={()=>setVerified(false)} className="mt-6 text-sm font-semibold text-primary">Réinitialiser</button></aside><section><p className="mb-5 text-sm font-medium">{shown.length} résultat{shown.length!==1?'s':''}</p>{loading?<div className="grid gap-5 md:grid-cols-2"><div className="h-80 animate-pulse rounded-2xl bg-muted"/><div className="h-80 animate-pulse rounded-2xl bg-muted"/></div>:shown.length?<div className="grid gap-5 md:grid-cols-2">{shown.map(x=><CatererCard key={x.id} caterer={x}/>)}</div>:<div className="rounded-2xl border p-10 text-center"><h2 className="text-xl font-bold">Aucun résultat</h2><p className="mt-2 text-muted-foreground">Élargissez la distance ou retirez certains filtres.</p></div>}</section></div></main><Footer/></>;
+}

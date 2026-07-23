@@ -6,6 +6,17 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
+import Home from '@/pages/Home';
+import Search from '@/pages/Search';
+import CatererProfile from '@/pages/CatererProfile';
+import QuoteRequest from '@/pages/QuoteRequest';
+import UrgentRequest from '@/pages/UrgentRequest';
+import Pricing from '@/pages/Pricing';
+import Ranking from '@/pages/Ranking';
+import Guides from '@/pages/Guides';
+import ProSpace from '@/pages/ProSpace';
+import Legal from '@/pages/Legal';
+import CookieBanner from '@/components/site/CookieBanner';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -34,7 +45,16 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      {/* Add your page Route elements here */}
+      <Route path="/" element={<Home />} />
+      <Route path="/recherche" element={<Search />} />
+      <Route path="/traiteurs/:slug" element={<CatererProfile />} />
+      <Route path="/demande-devis" element={<QuoteRequest />} />
+      <Route path="/urgence-traiteur" element={<UrgentRequest />} />
+      <Route path="/tarifs-professionnels" element={<Pricing />} />
+      <Route path="/referencement" element={<Ranking />} />
+      <Route path="/guides" element={<Guides />} />
+      <Route path="/espace-traiteur" element={<ProSpace />} />
+      <Route path="/legal/:slug" element={<Legal />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
@@ -49,6 +69,7 @@ function App() {
         <Router>
           <ScrollToTop />
           <AuthenticatedApp />
+          <CookieBanner />
         </Router>
         <Toaster />
       </QueryClientProvider>
