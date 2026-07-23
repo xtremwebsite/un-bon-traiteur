@@ -5,7 +5,7 @@ import { Image } from '@/components/ui/image';
 const moments=[
   ['Mariage','Célébrations élégantes','https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=900&q=85'],
   ['Anniversaire','Instants mémorables','https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=900&q=85'],
-  ['Cocktail','Élégance contemporaine','https://images.unsplash.com/photo-1470337458703-46ad1756a1875?auto=format&fit=crop&w=900&q=85'],
+  ['Cocktail','Élégance contemporaine','https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=900&q=85'],
   ['Brunch','Matins gourmands','https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=900&q=85'],
   ['Entreprise','Expériences professionnelles','https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=900&q=85'],
   ['Réception privée','Moments d’exception','https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&q=85']

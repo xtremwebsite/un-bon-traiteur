@@ -1,0 +1,8 @@
+import { useEffect,useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import AdminGuard from '@/components/admin/AdminGuard';
+import AdminHeader from '@/components/admin/AdminHeader';
+import AdminStats from '@/components/admin/AdminStats';
+import CatererTable from '@/components/admin/CatererTable';
+import QuoteTable from '@/components/admin/QuoteTable';
+export default function Admin(){const[caterers,setCaterers]=useState([]);const[quotes,setQuotes]=useState([]);const[loading,setLoading]=useState(true);const load=()=>Promise.all([base44.entities.CatererProfile.list('-created_date',100),base44.entities.QuoteRequest.list('-created_date',100)]).then(([c,q])=>{setCaterers(c);setQuotes(q);setLoading(false)});useEffect(()=>{load()},[]);const updateCaterer=async(id,data)=>{await base44.entities.CatererProfile.update(id,data);await load()};const updateQuote=async(id,data)=>{await base44.entities.QuoteRequest.update(id,data);await load()};const stats={caterers:caterers.length,published:caterers.filter(x=>x.published).length,quotes:quotes.length,pending:quotes.filter(x=>['submitted','matched'].includes(x.status)).length};return <AdminGuard><div className="min-h-screen bg-muted/50"><AdminHeader/><main className="mx-auto max-w-7xl space-y-8 px-4 py-8"><div><p className="text-sm font-semibold text-primary">Pilotage de la plateforme</p><h1 className="mt-1 font-heading text-3xl font-bold">Tableau de bord</h1></div>{loading?<div className="h-52 animate-pulse rounded-2xl bg-muted"/>:<><AdminStats stats={stats}/><CatererTable items={caterers} onUpdate={updateCaterer}/><QuoteTable items={quotes} onUpdate={updateQuote}/></>}</main></div></AdminGuard>}

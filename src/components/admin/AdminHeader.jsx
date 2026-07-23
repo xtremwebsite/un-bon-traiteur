@@ -1,0 +1,4 @@
+import { Link } from 'react-router-dom';
+import { LayoutDashboard,LogOut } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+export default function AdminHeader(){return <header className="border-b bg-card"><div className="mx-auto flex h-16 max-w-7xl items-center px-4"><Link to="/admin" className="flex items-center gap-2 font-heading text-lg font-bold text-primary"><LayoutDashboard size={20}/>Administration</Link><Link to="/" className="ml-auto text-sm font-semibold">Voir le site</Link><button onClick={()=>base44.auth.logout('/login?next=/admin')} className="ml-4 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"><LogOut size={16}/>Déconnexion</button></div></header>}

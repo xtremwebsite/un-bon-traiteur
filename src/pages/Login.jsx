@@ -20,7 +20,8 @@ export default function Login() {
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
-      window.location.href = "/";
+      const next = new URLSearchParams(window.location.search).get("next") || "/";
+      window.location.href = next;
     } catch (err) {
       setError(err.message || "Invalid email or password");
     } finally {
@@ -29,19 +30,20 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", "/");
+    const next = new URLSearchParams(window.location.search).get("next") || "/";
+    base44.auth.loginWithProvider("google", next);
   };
 
   return (
     <AuthLayout
       icon={LogIn}
-      title="Welcome back"
-      subtitle="Log in to your account"
+      title="Connexion administrateur"
+      subtitle="Connectez-vous pour accéder au tableau de bord"
       footer={
         <>
-          Don't have an account?{" "}
+          Pas encore de compte ?{" "}
           <Link to="/register" className="text-primary font-medium hover:underline">
-            Create one
+            Créer un compte
           </Link>
         </>
       }
@@ -52,7 +54,7 @@ export default function Login() {
         onClick={handleGoogle}
       >
         <GoogleIcon className="w-5 h-5 mr-2" />
-        Continue with Google
+        Continuer avec Google
       </Button>
 
       <div className="relative mb-6">
@@ -60,7 +62,7 @@ export default function Login() {
           <div className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-3 text-muted-foreground">or</span>
+          <span className="bg-card px-3 text-muted-foreground">ou</span>
         </div>
       </div>
 
@@ -90,9 +92,9 @@ export default function Login() {
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Mot de passe</Label>
             <Link to="/forgot-password" className="text-xs text-primary hover:underline">
-              Forgot password?
+              Mot de passe oublié ?
             </Link>
           </div>
           <div className="relative">
@@ -113,10 +115,10 @@ export default function Login() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Logging in...
+              Connexion…
             </>
           ) : (
-            "Log in"
+            "Se connecter"
           )}
         </Button>
       </form>
