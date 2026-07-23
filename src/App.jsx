@@ -24,6 +24,7 @@ import ResetPassword from '@/pages/ResetPassword';
 import Admin from '@/pages/Admin';
 import ProRegistration from '@/pages/ProRegistration';
 import ProDashboard from '@/pages/ProDashboard';
+import CatererMap from '@/pages/CatererMap';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -67,6 +68,7 @@ const AuthenticatedApp = () => {
       </Route>
       <Route path="/" element={<Home />} />
       <Route path="/recherche" element={<Search />} />
+      <Route path="/carte" element={<CatererMap />} />
       <Route path="/traiteurs/:slug" element={<CatererProfile />} />
       <Route path="/demande-devis" element={<QuoteRequest />} />
       <Route path="/urgence-traiteur" element={<UrgentRequest />} />

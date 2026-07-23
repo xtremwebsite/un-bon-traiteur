@@ -46,6 +46,13 @@
     },
     "source_url": {
       "type": "string"
+    },
+    "professional_reply": {
+      "type": "string"
+    },
+    "reply_date": {
+      "type": "string",
+      "format": "date"
     }
   },
   "required": [

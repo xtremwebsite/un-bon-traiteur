@@ -54,6 +54,9 @@
     "website": {
       "type": "string"
     },
+    "address": {
+      "type": "string"
+    },
     "city": {
       "type": "string"
     },
@@ -100,6 +103,24 @@
       "type": "array",
       "items": {
         "type": "string"
+      }
+    },
+    "faq": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string"
+          },
+          "answer": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "question",
+          "answer"
+        ]
       }
     },
     "min_guests": {
