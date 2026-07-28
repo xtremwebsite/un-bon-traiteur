@@ -1,0 +1,79 @@
+{
+  "name": "WebhookDelivery",
+  "type": "object",
+  "properties": {
+    "idempotency_key": {
+      "type": "string"
+    },
+    "event_name": {
+      "type": "string"
+    },
+    "entity_name": {
+      "type": "string"
+    },
+    "entity_id": {
+      "type": "string"
+    },
+    "target": {
+      "type": "string",
+      "enum": [
+        "production",
+        "test"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "delivered",
+        "failed"
+      ]
+    },
+    "attempts": {
+      "type": "number",
+      "default": 1
+    },
+    "http_status": {
+      "type": "number"
+    },
+    "response_excerpt": {
+      "type": "string"
+    },
+    "error_message": {
+      "type": "string"
+    },
+    "sent_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "idempotency_key",
+    "event_name",
+    "entity_name",
+    "entity_id",
+    "target",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "n8n_new_urgent_request",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "send_to_n8n": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "sendN8nWebhook",
+            "args": {
+              "entity_name": "UrgentRequest",
+              "entity_id": "${ .trigger.entity_id }",
+              "event_name": "urgent_request.created",
+              "mode": "production"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Envoyer l\u2019urgence \u00e0 n8n",
+            "description": "Webhook sign\u00e9 et d\u00e9dupliqu\u00e9"
+          }
+        }
+      }
+    ]
+  },
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "UrgentRequest"
+    }
+  },
+  "description": "Transmet chaque nouvelle demande urgente \u00e0 n8n.",
+  "name": "N8n - Nouvelle demande urgente"
+}

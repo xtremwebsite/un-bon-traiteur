@@ -1,0 +1,43 @@
+{
+  "name": "N8n - Nouvelle inscription traiteur",
+  "description": "Transmet chaque nouvelle inscription professionnelle \u00e0 n8n.",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "CatererProfile",
+      "events": [
+        "create"
+      ]
+    },
+    "condition": "${ .trigger.data.profile_origin == \"owner\" }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "n8n_new_caterer_registration",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "send_to_n8n": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "sendN8nWebhook",
+            "args": {
+              "entity_name": "CatererProfile",
+              "entity_id": "${ .trigger.entity_id }",
+              "event_name": "caterer_registration.created",
+              "mode": "production"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Envoyer l\u2019inscription \u00e0 n8n",
+            "description": "Webhook sign\u00e9 et d\u00e9dupliqu\u00e9"
+          }
+        }
+      }
+    ]
+  }
+}
