@@ -1,0 +1,5 @@
+import { Clock3, Inbox } from 'lucide-react';
+
+export default function DashboardInbox() {
+  return <section id="demandes" className="scroll-mt-24 rounded-3xl border bg-card/90 p-6 shadow-xl backdrop-blur-xl"><div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-sm font-bold uppercase tracking-widest text-destructive">Vue prioritaire</p><h2 className="mt-1 font-heading text-2xl font-bold">Demandes reçues</h2></div><span className="rounded-full bg-secondary px-3 py-1 text-xs font-bold text-primary">0 nouvelle</span></div><div className="mt-5 grid gap-3 sm:grid-cols-2"><div className="rounded-2xl border bg-background p-4"><div className="flex items-center gap-2 font-bold text-primary"><Inbox size={18}/>Devis directs</div><p className="mt-2 text-sm text-muted-foreground">Aucune demande reçue pour le moment.</p></div><div className="rounded-2xl border bg-background p-4"><div className="flex items-center gap-2 font-bold text-destructive"><Clock3 size={18}/>Urgences locales</div><p className="mt-2 text-sm text-muted-foreground">Aucune urgence disponible pour le moment.</p></div></div></section>;
+}
