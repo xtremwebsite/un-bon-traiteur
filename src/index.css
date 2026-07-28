@@ -125,3 +125,18 @@
   transform: rotate(-45deg);
 }
 .caterer-map-pin svg { width: 20px; height: 20px; transform: rotate(45deg); }
+.caterer-bento-popup .leaflet-popup-content-wrapper {
+  padding: 0;
+  border-radius: 2rem;
+  background: transparent;
+  box-shadow: none;
+}
+.caterer-bento-popup .leaflet-popup-content { width: auto !important; margin: 0; }
+.caterer-bento-popup .leaflet-popup-tip { background: hsl(var(--primary)); }
+.caterer-bento-popup .leaflet-popup-close-button {
+  z-index: 20;
+  top: 14px !important;
+  right: 14px !important;
+  color: hsl(var(--primary-foreground)) !important;
+  font-size: 24px !important;
+}
