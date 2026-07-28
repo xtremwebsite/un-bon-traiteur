@@ -8,7 +8,7 @@ const tabs = [
 ];
 
 export default function AdminTabs({ active, onChange }) {
-  return <nav className="flex gap-2 overflow-x-auto pb-1" aria-label="Sections du back-office">
-    {tabs.map(([key, label]) => <button key={key} type="button" onClick={() => onChange(key)} className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-semibold ${active === key ? 'bg-primary text-primary-foreground' : 'border bg-card'}`}>{label}</button>)}
+  return <nav className="grid h-fit gap-2 rounded-3xl border bg-primary p-3 text-primary-foreground shadow-2xl lg:sticky lg:top-24" aria-label="Sections du back-office">
+    {tabs.map(([key, label]) => <button key={key} type="button" onClick={() => onChange(key)} className={`w-full whitespace-nowrap rounded-2xl px-4 py-3 text-left text-sm font-semibold transition-colors ${active === key ? 'bg-primary-foreground text-primary' : 'hover:bg-primary-foreground/15'}`}>{label}</button>)}
   </nav>;
 }

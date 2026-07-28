@@ -1,0 +1,8 @@
+import { CheckCircle2, Images, MapPin, Sparkles, Utensils } from 'lucide-react';
+import { Image } from '@/components/ui/image';
+
+const steps = [[Utensils, 'Prestations'], [MapPin, 'Coordonnées'], [Images, 'Logo et photos']];
+
+export default function RegistrationGuide() {
+  return <aside className="overflow-hidden rounded-[2rem] border bg-primary text-primary-foreground shadow-2xl lg:sticky lg:top-24"><Image src="https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1200&q=85" alt="Service traiteur professionnel" className="h-56 w-full" fittingType="fill"/><div className="p-6"><div className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest"><Sparkles size={17}/>Votre studio</div><h2 className="mt-3 font-heading text-3xl font-bold">Présentez votre savoir-faire</h2><p className="mt-3 text-sm leading-6 text-primary-foreground/75">Complétez chaque espace pour créer une fiche claire, attractive et prête à être examinée.</p><div className="mt-6 space-y-3">{steps.map(([Icon, label], index) => <div key={label} className="flex items-center gap-3 rounded-2xl bg-primary-foreground/10 p-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-primary-foreground text-primary"><Icon size={18}/></span><span className="text-sm font-bold">{index + 1}. {label}</span><CheckCircle2 className="ml-auto opacity-40" size={17}/></div>)}</div></div></aside>;
+}
