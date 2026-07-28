@@ -1,7 +1,11 @@
 import 'leaflet/dist/leaflet.css';
-import { CircleMarker, MapContainer, Popup, TileLayer } from 'react-leaflet';
+import { MapContainer, TileLayer } from 'react-leaflet';
+import CatererMarker from '@/components/map/CatererMarker';
+import GeolocationButton from '@/components/map/GeolocationButton';
 import UrgentMarker from '@/components/map/UrgentMarker';
 
 export default function CatererMapView({ mode, caterers, urgent, subscribed }) {
-  return <MapContainer center={[46.6, 2.2]} zoom={6} scrollWheelZoom className="h-[65vh] min-h-[480px] w-full rounded-3xl shadow-xl"><TileLayer attribution='&copy; OpenStreetMap' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>{mode === 'caterers' && caterers.map(item => { const destination = item.address ? `${item.address}, ${item.postal_code || ''} ${item.city}` : `${item.latitude},${item.longitude}`; return <CircleMarker key={item.id} center={[item.latitude, item.longitude]} radius={9} pathOptions={{ color: 'hsl(161 45% 16%)', fillColor: 'hsl(6 85% 66%)', fillOpacity: 1 }}><Popup><strong>{item.business_name}</strong><br/>{item.address && <><span>{item.address}</span><br/></>}<span>{item.postal_code} {item.city}</span><div className="mt-3 flex gap-2"><a href={`/traiteurs/${item.slug}`} className="font-semibold text-primary">Voir la fiche</a><a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`} target="_blank" rel="noreferrer" className="font-semibold text-primary">M’y rendre</a></div></Popup></CircleMarker>; })}{mode === 'urgent' && urgent.map(item => <UrgentMarker key={item.id} item={item} subscribed={subscribed}/>)}</MapContainer>;
+  const showCaterers = mode === 'all' || mode === 'caterers';
+  const showUrgent = mode === 'all' || mode === 'urgent';
+  return <MapContainer center={[46.6, 2.2]} zoom={6} scrollWheelZoom className="h-[65vh] min-h-[480px] w-full rounded-3xl shadow-xl"><TileLayer attribution='&copy; OpenStreetMap' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/><GeolocationButton/>{showCaterers && caterers.map(item => <CatererMarker key={item.id} item={item}/>) }{showUrgent && urgent.map(item => <UrgentMarker key={item.id} item={item} subscribed={subscribed}/>)}</MapContainer>;
 }

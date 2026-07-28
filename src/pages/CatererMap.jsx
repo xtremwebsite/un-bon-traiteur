@@ -6,7 +6,7 @@ import CatererMapView from '@/components/map/CatererMapView';
 import MapFilters from '@/components/map/MapFilters';
 
 export default function CatererMap() {
-  const [mode, setMode] = useState('caterers');
+  const [mode, setMode] = useState('all');
   const [data, setData] = useState({ caterers: [], urgent: [], subscribed: false });
   const [loading, setLoading] = useState(true);
   useEffect(() => { Promise.all([
