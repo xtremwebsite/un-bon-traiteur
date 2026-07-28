@@ -131,7 +131,15 @@
   background: transparent;
   box-shadow: none;
 }
-.caterer-bento-popup .leaflet-popup-content { width: auto !important; margin: 0; }
+.caterer-bento-popup { max-width: calc(100vw - 1.5rem); }
+.caterer-bento-popup .leaflet-popup-content {
+  width: auto !important;
+  max-width: calc(100vw - 3rem);
+  max-height: min(560px, calc(100vh - 9rem));
+  margin: 0;
+  overflow-y: auto;
+  border-radius: 2rem;
+}
 .caterer-bento-popup .leaflet-popup-tip { background: hsl(var(--primary)); }
 .caterer-bento-popup .leaflet-popup-close-button {
   z-index: 20;
