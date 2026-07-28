@@ -140,3 +140,19 @@
   color: hsl(var(--primary-foreground)) !important;
   font-size: 24px !important;
 }
+.caterer-bento-popup .caterer-action {
+  color: hsl(var(--primary-foreground)) !important;
+}
+.caterer-bento-popup .caterer-action:hover {
+  border-color: hsl(var(--secondary));
+  background: hsl(var(--secondary));
+  color: hsl(var(--primary)) !important;
+}
+.caterer-bento-popup .caterer-action--accent {
+  color: hsl(var(--primary)) !important;
+}
+.caterer-bento-popup .caterer-action--accent:hover {
+  border-color: hsl(var(--destructive));
+  background: hsl(var(--destructive));
+  color: hsl(var(--destructive-foreground)) !important;
+}
