@@ -75,6 +75,27 @@
     "description": {
       "type": "string"
     },
+    "seo_title": {
+      "type": "string"
+    },
+    "seo_description": {
+      "type": "string"
+    },
+    "geo_summary": {
+      "type": "string"
+    },
+    "service_areas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "seo_keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "event_types": {
       "type": "array",
       "items": {
