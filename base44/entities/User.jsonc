@@ -1,4 +1,6 @@
 {
+  "name": "User",
+  "type": "object",
   "properties": {
     "role": {
       "type": "string",
@@ -7,11 +9,30 @@
         "admin",
         "user"
       ]
+    },
+    "subscription_plan": {
+      "type": "string",
+      "enum": [
+        "none",
+        "bronze",
+        "argent",
+        "or"
+      ],
+      "default": "none"
+    },
+    "subscription_status": {
+      "type": "string",
+      "enum": [
+        "inactive",
+        "trialing",
+        "active",
+        "past_due",
+        "cancelled"
+      ],
+      "default": "inactive"
     }
   },
   "required": [
     "role"
-  ],
-  "name": "User",
-  "type": "object"
+  ]
 }

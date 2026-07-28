@@ -33,6 +33,12 @@
     "location": {
       "type": "string"
     },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
     "radius_km": {
       "type": "number"
     },
@@ -46,6 +52,9 @@
       "type": "number"
     },
     "service_need": {
+      "type": "string"
+    },
+    "message": {
       "type": "string"
     },
     "previous_caterer_unavailable": {
