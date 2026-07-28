@@ -65,7 +65,16 @@
   ],
   "rls": {
     "read": {
-      "data.status": "published"
+      "$or": [
+        {
+          "data.status": "published"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
     },
     "create": {
       "user_condition": {
