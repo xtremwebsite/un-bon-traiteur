@@ -1,0 +1,8 @@
+export default function UserTable({ items, currentUserId, onUpdate }) {
+  return <section className="rounded-2xl border bg-card">
+    <div className="border-b p-5"><h2 className="text-xl font-bold">Particuliers et administrateurs</h2><p className="mt-1 text-sm text-muted-foreground">Consulter les comptes inscrits et gérer leurs rôles.</p></div>
+    <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-muted"><tr><th className="p-4">Nom</th><th className="p-4">E-mail</th><th className="p-4">Inscription</th><th className="p-4">Rôle</th></tr></thead>
+      <tbody>{items.map(user => <tr key={user.id} className="border-t"><td className="p-4 font-semibold">{user.full_name || 'Non renseigné'}{user.id === currentUserId && <span className="ml-2 text-xs text-muted-foreground">Vous</span>}</td><td className="p-4">{user.email}</td><td className="p-4">{user.created_date ? new Date(user.created_date).toLocaleDateString('fr-FR') : '—'}</td><td className="p-4"><select value={user.role || 'user'} disabled={user.id === currentUserId} onChange={e => onUpdate(user.id, { role: e.target.value })} className="h-10 rounded-lg border bg-background px-3 disabled:opacity-60"><option value="user">Particulier</option><option value="admin">Administrateur</option></select></td></tr>)}</tbody>
+    </table>{!items.length && <p className="p-6 text-center text-muted-foreground">Aucun compte inscrit.</p>}</div>
+  </section>;
+}

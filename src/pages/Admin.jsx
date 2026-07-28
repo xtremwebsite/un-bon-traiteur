@@ -1,8 +1,23 @@
-import { useEffect,useState } from 'react';
+import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import AdminGuard from '@/components/admin/AdminGuard';
 import AdminHeader from '@/components/admin/AdminHeader';
 import AdminStats from '@/components/admin/AdminStats';
+import AdminTabs from '@/components/admin/AdminTabs';
 import CatererTable from '@/components/admin/CatererTable';
 import QuoteTable from '@/components/admin/QuoteTable';
-export default function Admin(){const[caterers,setCaterers]=useState([]);const[quotes,setQuotes]=useState([]);const[loading,setLoading]=useState(true);const load=()=>Promise.all([base44.entities.CatererProfile.list('-created_date',100),base44.entities.QuoteRequest.list('-created_date',100)]).then(([c,q])=>{setCaterers(c);setQuotes(q);setLoading(false)});useEffect(()=>{load()},[]);const updateCaterer=async(id,data)=>{await base44.entities.CatererProfile.update(id,data);await load()};const updateQuote=async(id,data)=>{await base44.entities.QuoteRequest.update(id,data);await load()};const stats={caterers:caterers.length,published:caterers.filter(x=>x.published).length,quotes:quotes.length,pending:quotes.filter(x=>['submitted','matched'].includes(x.status)).length};return <AdminGuard><div className="min-h-screen bg-muted/50"><AdminHeader/><main className="mx-auto max-w-7xl space-y-8 px-4 py-8"><div><p className="text-sm font-semibold text-primary">Pilotage de la plateforme</p><h1 className="mt-1 font-heading text-3xl font-bold">Tableau de bord</h1></div>{loading?<div className="h-52 animate-pulse rounded-2xl bg-muted"/>:<><AdminStats stats={stats}/><CatererTable items={caterers} onUpdate={updateCaterer}/><QuoteTable items={quotes} onUpdate={updateQuote}/></>}</main></div></AdminGuard>}
+import UrgentTable from '@/components/admin/UrgentTable';
+import UserTable from '@/components/admin/UserTable';
+import PlanTable from '@/components/admin/PlanTable';
+import ReviewTable from '@/components/admin/ReviewTable';
+
+export default function Admin() {
+  const [active, setActive] = useState('overview');
+  const [data, setData] = useState({ caterers: [], quotes: [], urgent: [], users: [], plans: [], reviews: [], me: null });
+  const [loading, setLoading] = useState(true);
+  const load = async () => { const [caterers, quotes, urgent, users, plans, reviews, me] = await Promise.all([base44.entities.CatererProfile.list('-created_date', 200), base44.entities.QuoteRequest.list('-created_date', 200), base44.entities.UrgentRequest.list('-created_date', 200), base44.entities.User.list('-created_date', 200), base44.entities.SubscriptionPlan.list('display_order', 50), base44.entities.Review.list('-created_date', 200), base44.auth.me()]); setData({ caterers, quotes, urgent, users, plans, reviews, me }); setLoading(false); };
+  useEffect(() => { load(); }, []);
+  const update = async (entity, id, payload) => { await base44.entities[entity].update(id, payload); await load(); };
+  const stats = { caterers: data.caterers.length, published: data.caterers.filter(x => x.published).length, users: data.users.filter(x => x.role !== 'admin').length, quotes: data.quotes.length + data.urgent.length, pending: data.quotes.filter(x => ['submitted','matched'].includes(x.status)).length + data.urgent.filter(x => x.status === 'to_verify').length, reviews: data.reviews.filter(x => x.status === 'pending').length };
+  return <AdminGuard><div className="min-h-screen bg-muted/50"><AdminHeader/><main className="mx-auto max-w-7xl space-y-8 px-4 py-8"><div><p className="text-sm font-semibold text-primary">Pilotage de la plateforme</p><h1 className="mt-1 font-heading text-3xl font-bold">Back-office administrateur</h1></div><AdminTabs active={active} onChange={setActive}/>{loading ? <div className="h-52 animate-pulse rounded-2xl bg-muted"/> : <>{active === 'overview' && <AdminStats stats={stats}/>} {active === 'professionals' && <CatererTable items={data.caterers} onUpdate={(id,payload) => update('CatererProfile',id,payload)}/>} {active === 'users' && <UserTable items={data.users} currentUserId={data.me?.id} onUpdate={(id,payload) => update('User',id,payload)}/>} {active === 'subscriptions' && <PlanTable items={data.plans} onUpdate={(id,payload) => update('SubscriptionPlan',id,payload)}/>} {active === 'requests' && <div className="space-y-8"><QuoteTable items={data.quotes} onUpdate={(id,payload) => update('QuoteRequest',id,payload)}/><UrgentTable items={data.urgent} onUpdate={(id,payload) => update('UrgentRequest',id,payload)}/></div>} {active === 'reviews' && <ReviewTable items={data.reviews} caterers={data.caterers} onUpdate={(id,payload) => update('Review',id,payload)}/>}</>}</main></div></AdminGuard>;
+}
