@@ -3,6 +3,7 @@ const tabs = [
   ['professionals', 'Professionnels'],
   ['users', 'Particuliers'],
   ['subscriptions', 'Abonnements & tarifs'],
+  ['catalogs', 'Événements & formats'],
   ['requests', 'Demandes'],
   ['reviews', 'Avis'],
 ];
