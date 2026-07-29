@@ -17,9 +17,9 @@ export default async function(req) {
     const items = source.map(item => {
       const point = Number.isFinite(item.latitude) && Number.isFinite(item.longitude) ? { latitude: item.latitude, longitude: item.longitude } : resolved.get(item.location);
       if (!point) return null;
-      const summary = { id: item.id, kind: item.kind, reference: item.reference, event_type: item.event_type, event_date: item.event_date, guest_count: item.guest_count, location: item.location, budget: item.budget, format: item.format, status: item.status, radius_km: item.radius_km, ...point };
+      const summary = { id: item.id, kind: item.kind, reference: item.reference, caterer_id: item.caterer_id, event_type: item.event_type, event_date: item.event_date, event_time: item.event_time, guest_count: item.guest_count, location: item.location, address: item.address, postal_code: item.postal_code, city: item.city, budget: item.budget, format: item.format, status: item.status, radius_km: item.radius_km, ...point };
       return subscribed ? { ...summary, message: item.message, service_need: item.service_need, first_name: item.first_name, last_name: item.last_name, email: item.email, phone: item.phone } : summary;
-    }).filter(Boolean).filter(item => user.role === 'admin' || item.kind !== 'quote' || (Number.isFinite(profile?.latitude) && Number.isFinite(profile?.longitude) && distanceKm(profile.latitude, profile.longitude, item.latitude, item.longitude) <= Number(item.radius_km || 50)));
+    }).filter(Boolean).filter(item => user.role === 'admin' || item.kind !== 'quote' || (item.caterer_id ? item.caterer_id === profile?.id : Number.isFinite(profile?.latitude) && Number.isFinite(profile?.longitude) && distanceKm(profile.latitude, profile.longitude, item.latitude, item.longitude) <= Number(item.radius_km || 50)));
     return Response.json({ items, subscribed, profile: profile ? { business_name: profile.business_name, latitude: profile.latitude, longitude: profile.longitude, service_radius_km: profile.service_radius_km } : null });
   } catch (error) {
     console.error('proOpportunityFeed', error);

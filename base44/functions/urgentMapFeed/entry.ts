@@ -9,7 +9,7 @@ export default async function(req) {
     const subscribed = user?.role === 'admin' || (['active', 'trialing'].includes(user?.subscription_status) && ['bronze', 'argent', 'or'].includes(user?.subscription_plan));
     const [urgentRecords, quoteRecords] = await Promise.all([base44.asServiceRole.entities.UrgentRequest.list('-created_date', 200), base44.asServiceRole.entities.QuoteRequest.list('-created_date', 200)]);
     const activeUrgent = urgentRecords.filter(item => item.transmission_consent && !['fulfilled', 'expired', 'cancelled', 'rejected'].includes(item.status));
-    const activeQuotes = quoteRecords.filter(item => item.transmission_consent && !['closed', 'cancelled'].includes(item.status));
+    const activeQuotes = quoteRecords.filter(item => !item.caterer_id && item.transmission_consent && !['closed', 'cancelled'].includes(item.status));
     const active = [...activeUrgent, ...activeQuotes];
     const locations = [...new Set(active.filter(item => !Number.isFinite(item.latitude) || !Number.isFinite(item.longitude)).map(item => item.location))];
     const resolved = new Map(await Promise.all(locations.map(async location => [location, await geocodeLocation(location)])));

@@ -33,6 +33,15 @@
     "location": {
       "type": "string"
     },
+    "address": {
+      "type": "string"
+    },
+    "postal_code": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
     "latitude": {
       "type": "number"
     },
