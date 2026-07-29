@@ -33,6 +33,12 @@
     "location": {
       "type": "string"
     },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
     "guest_count": {
       "type": "number"
     },

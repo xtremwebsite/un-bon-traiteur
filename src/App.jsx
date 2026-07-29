@@ -26,6 +26,7 @@ import ProRegistration from '@/pages/ProRegistration';
 import ProDashboard from '@/pages/ProDashboard';
 import CatererMap from '@/pages/CatererMap';
 import AccountPortal from '@/pages/AccountPortal';
+import ProOpportunities from '@/pages/ProOpportunities';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -69,6 +70,9 @@ const AuthenticatedApp = () => {
       </Route>
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=/mon-espace" replace />} />}>
         <Route path="/mon-espace" element={<AccountPortal />} />
+      </Route>
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=/opportunites-pro" replace />} />}>
+        <Route path="/opportunites-pro" element={<ProOpportunities />} />
       </Route>
       <Route path="/" element={<Home />} />
       <Route path="/recherche" element={<Search />} />
