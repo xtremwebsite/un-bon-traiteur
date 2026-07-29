@@ -21,7 +21,10 @@ export default async function(req) {
     const reference = `${kind === 'urgent' ? 'URG' : 'DEV'}-${Date.now().toString(36).toUpperCase()}`;
     const coordinates = kind === 'urgent' ? await geocode(data.location) : {};
     const payload = { ...data, ...coordinates, reference };
-    const record = kind === 'urgent' ? await base44.asServiceRole.entities.UrgentRequest.create({ ...payload, status: 'to_verify', professionals_alerted: 0 }) : await base44.asServiceRole.entities.QuoteRequest.create({ ...payload, status: 'submitted' });
+    let user = null;
+    try { user = await base44.auth.me(); } catch { user = null; }
+    const entities = user ? base44.entities : base44.asServiceRole.entities;
+    const record = kind === 'urgent' ? await entities.UrgentRequest.create({ ...payload, status: 'to_verify', professionals_alerted: 0 }) : await entities.QuoteRequest.create({ ...payload, status: 'submitted' });
     return Response.json({ ok: true, reference, id: record.id });
   } catch (error) {
     console.error('createPublicRequest', error);

@@ -20,7 +20,7 @@ export default function Login() {
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
-      const next = new URLSearchParams(window.location.search).get("next") || "/";
+      const next = new URLSearchParams(window.location.search).get("next") || "/mon-espace";
       window.location.href = next;
     } catch (err) {
       setError(err.message || "Invalid email or password");
@@ -30,15 +30,15 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
-    const next = new URLSearchParams(window.location.search).get("next") || "/";
+    const next = new URLSearchParams(window.location.search).get("next") || "/mon-espace";
     base44.auth.loginWithProvider("google", next);
   };
 
   return (
     <AuthLayout
       icon={LogIn}
-      title="Connexion administrateur"
-      subtitle="Connectez-vous pour accéder au tableau de bord"
+      title="Connexion"
+      subtitle="Accédez à votre espace particulier ou professionnel"
       footer={
         <>
           Pas encore de compte ?{" "}
