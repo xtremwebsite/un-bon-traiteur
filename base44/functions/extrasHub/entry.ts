@@ -11,7 +11,7 @@ export default async function(req: Request): Promise<Response> {
     if(user.role!=='admin'&&!caterer)return Response.json({error:'Accès réservé aux traiteurs'},{status:403});
     const body=await req.json();
     if(body.action==='directory'){
-      const [extras,ratings,requests]=await Promise.all([base44.asServiceRole.entities.ExtraProfile.filter({active:true},'-updated_date',500),base44.asServiceRole.entities.ExtraRecommendation.list('-created_date',1000),base44.entities.ExtraRequest.list('-created_date',100)]);
+      const [extras,ratings,requests]=await Promise.all([base44.asServiceRole.entities.ExtraProfile.filter({active:true,available:true},'-updated_date',500),base44.asServiceRole.entities.ExtraRecommendation.list('-created_date',1000),base44.entities.ExtraRequest.list('-created_date',100)]);
       const items=extras.map(extra=>{const reviews=ratings.filter(item=>item.extra_id===extra.id);const average=reviews.length?reviews.reduce((sum,item)=>sum+item.rating,0)/reviews.length:0;const {date_of_birth,address,email,phone,last_name,created_by,created_by_id,...publicExtra}=extra;return {...publicExtra,last_name:extra.display_last_name?last_name:'',email:extra.display_email?email:'',phone:extra.display_phone?phone:'',age:ageFrom(date_of_birth),average_rating:average,recommendation_count:reviews.length,recommendations:reviews.map(({rating,comment,caterer_name,mission_date})=>({rating,comment,caterer_name,mission_date}))}});
       return Response.json({items,requests,caterer:caterer?{id:caterer.id,business_name:caterer.business_name}:null});
     }

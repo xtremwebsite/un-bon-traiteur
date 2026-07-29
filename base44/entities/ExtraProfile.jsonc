@@ -54,6 +54,13 @@
     "availability_notes": {
       "type": "string"
     },
+    "availability_dates": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "date"
+      }
+    },
     "mobility_radius_km": {
       "type": "number"
     },
