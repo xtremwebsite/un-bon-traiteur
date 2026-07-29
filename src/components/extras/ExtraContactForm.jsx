@@ -1,0 +1,8 @@
+import {useState} from 'react';
+
+export default function ExtraContactForm({extra,onSubmit,onClose}) {
+  const [message,setMessage]=useState(''); const [busy,setBusy]=useState(false); const [sent,setSent]=useState(false); const [error,setError]=useState('');
+  const submit=async e=>{e.preventDefault();setBusy(true);setError('');try{await onSubmit({extra_id:extra.id,message});setSent(true)}catch(err){setError(err.response?.data?.error||err.message)}finally{setBusy(false)}};
+  if(sent)return <div className="mt-4 rounded-2xl bg-secondary p-4"><p className="font-bold">Message transmis</p><p className="mt-1 text-muted-foreground">L’Extra vous répondra directement s’il est intéressé.</p><button type="button" onClick={onClose} className="mt-3 font-bold text-primary">Fermer</button></div>;
+  return <form onSubmit={submit} className="mt-4 space-y-3 rounded-2xl border bg-background p-4"><label className="block font-bold">Votre message<textarea required minLength={10} value={message} onChange={e=>setMessage(e.target.value)} className="mt-1 min-h-28 w-full rounded-xl border p-3" placeholder="Présentez la mission, la date, les horaires et le lieu."/></label><p className="text-xs text-muted-foreground">Votre nom de traiteur et votre email seront transmis pour permettre une réponse.</p>{error&&<p className="text-destructive">{error}</p>}<div className="flex gap-3"><button disabled={busy} className="rounded-xl bg-primary px-4 py-2 font-bold text-primary-foreground disabled:opacity-50">{busy?'Envoi…':'Envoyer via le site'}</button><button type="button" onClick={onClose} className="rounded-xl border px-4 py-2 font-bold">Annuler</button></div></form>;
+}

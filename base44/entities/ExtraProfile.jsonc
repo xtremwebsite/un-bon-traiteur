@@ -39,6 +39,36 @@
     "experience_details": {
       "type": "string"
     },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "certifications": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "availability_notes": {
+      "type": "string"
+    },
+    "mobility_radius_km": {
+      "type": "number"
+    },
+    "transport": {
+      "type": "string",
+      "enum": [
+        "none",
+        "public",
+        "vehicle",
+        "both"
+      ]
+    },
+    "hourly_rate": {
+      "type": "number"
+    },
     "photo_urls": {
       "type": "array",
       "items": {
@@ -52,19 +82,28 @@
     "active": {
       "type": "boolean",
       "default": true
+    },
+    "display_last_name": {
+      "type": "boolean",
+      "default": false
+    },
+    "display_email": {
+      "type": "boolean",
+      "default": false
+    },
+    "display_phone": {
+      "type": "boolean",
+      "default": false
+    },
+    "contact_preference": {
+      "type": "string",
+      "enum": [
+        "site",
+        "email"
+      ],
+      "default": "site"
     }
   },
-  "required": [
-    "first_name",
-    "last_name",
-    "email",
-    "phone",
-    "date_of_birth",
-    "address",
-    "postal_code",
-    "city",
-    "skills"
-  ],
   "rls": {
     "read": {
       "$or": [

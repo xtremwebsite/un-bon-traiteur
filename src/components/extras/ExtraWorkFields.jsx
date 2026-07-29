@@ -1,0 +1,14 @@
+export default function ExtraWorkFields({data,set}) {
+  return <section className="space-y-4 rounded-2xl border p-4">
+    <h2 className="text-lg font-bold">Expérience et conditions souhaitées</h2>
+    <label className="block">Expérience <span className="font-normal text-muted-foreground">(facultatif)</span><textarea value={data.experience_details||''} onChange={set('experience_details')} className="mt-1 min-h-24 w-full rounded-xl border bg-background p-3" placeholder="Missions, établissements, spécialités…"/></label>
+    <div className="grid gap-4 sm:grid-cols-2">
+      <label>Langues <span className="font-normal text-muted-foreground">(séparées par des virgules)</span><input value={(data.languages||[]).join(', ')} onChange={set('languages',true)} className="mt-1 h-11 w-full rounded-xl border bg-background px-3" placeholder="Français, anglais"/></label>
+      <label>Certifications <span className="font-normal text-muted-foreground">(facultatif)</span><input value={(data.certifications||[]).join(', ')} onChange={set('certifications',true)} className="mt-1 h-11 w-full rounded-xl border bg-background px-3" placeholder="HACCP, permis…"/></label>
+      <label>Rayon de mobilité (km)<input min="0" type="number" value={data.mobility_radius_km??''} onChange={set('mobility_radius_km')} className="mt-1 h-11 w-full rounded-xl border bg-background px-3"/></label>
+      <label>Tarif horaire souhaité (€)<input min="0" step="0.5" type="number" value={data.hourly_rate??''} onChange={set('hourly_rate')} className="mt-1 h-11 w-full rounded-xl border bg-background px-3"/></label>
+      <label>Transport<select value={data.transport||''} onChange={set('transport')} className="mt-1 h-11 w-full rounded-xl border bg-background px-3"><option value="">Non renseigné</option><option value="none">Sans moyen de transport</option><option value="public">Transports en commun</option><option value="vehicle">Véhicule personnel</option><option value="both">Véhicule et transports</option></select></label>
+      <label>Disponibilités<input value={data.availability_notes||''} onChange={set('availability_notes')} className="mt-1 h-11 w-full rounded-xl border bg-background px-3" placeholder="Soirs, week-ends, ponctuel…"/></label>
+    </div>
+  </section>;
+}
