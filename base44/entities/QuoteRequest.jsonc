@@ -39,6 +39,10 @@
     "longitude": {
       "type": "number"
     },
+    "radius_km": {
+      "type": "number",
+      "default": 50
+    },
     "guest_count": {
       "type": "number"
     },
@@ -91,6 +95,10 @@
     "marketing_consent": {
       "type": "boolean",
       "default": false
+    },
+    "transmission_consent": {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [
@@ -100,7 +108,8 @@
     "location",
     "guest_count",
     "first_name",
-    "email"
+    "email",
+    "transmission_consent"
   ],
   "rls": {
     "read": {

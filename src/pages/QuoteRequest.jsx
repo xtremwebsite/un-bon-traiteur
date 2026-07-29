@@ -1,4 +1,4 @@
 import Header from '@/components/site/Header';
 import Footer from '@/components/site/Footer';
 import RequestForm from '@/components/forms/RequestForm';
-export default function QuoteRequest(){return <><Header/><main className="mx-auto max-w-3xl px-4 py-12"><p className="font-semibold text-destructive">Demande gratuite et sans engagement</p><h1 className="mt-2 font-heading text-4xl font-bold">Recevez un devis adapté</h1><p className="mb-8 mt-3 text-muted-foreground">Décrivez votre événement. Le contrat final reste conclu directement avec le traiteur.</p><RequestForm/></main><Footer/></>;}
+export default function QuoteRequest(){return <><Header/><main className="mx-auto max-w-3xl px-4 py-12"><p className="font-semibold text-destructive">Demande gratuite et sans engagement</p><h1 className="mt-2 font-heading text-4xl font-bold">Recevez un devis adapté</h1><p className="mb-8 mt-3 text-muted-foreground">Décrivez votre événement : votre demande anonyme sera proposée aux traiteurs situés dans un rayon de 50 km. Le contrat final reste conclu directement avec le traiteur.</p><RequestForm/></main><Footer/></>;}
