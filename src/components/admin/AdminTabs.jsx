@@ -3,6 +3,7 @@ const tabs = [
   ['analytics', 'Statistiques'],
   ['professionals', 'Professionnels'],
   ['extras', 'Validation Extras'],
+  ['extraBookings', 'Demandes Extras'],
   ['users', 'Particuliers'],
   ['subscriptions', 'Abonnements & tarifs'],
   ['catalogs', 'Événements & formats'],
