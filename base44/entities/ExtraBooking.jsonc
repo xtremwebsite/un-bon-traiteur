@@ -8,6 +8,17 @@
     "extra_user_id": {
       "type": "string"
     },
+    "extra_request_id": {
+      "type": "string"
+    },
+    "initiated_by": {
+      "type": "string",
+      "enum": [
+        "caterer",
+        "extra"
+      ],
+      "default": "caterer"
+    },
     "extra_name": {
       "type": "string"
     },
@@ -30,6 +41,9 @@
       "type": "string"
     },
     "caterer_id": {
+      "type": "string"
+    },
+    "caterer_user_id": {
       "type": "string"
     },
     "caterer_name": {
@@ -117,6 +131,9 @@
           "data.extra_user_id": "{{user.id}}"
         },
         {
+          "data.caterer_user_id": "{{user.id}}"
+        },
+        {
           "user_condition": {
             "role": "admin"
           }
@@ -135,6 +152,9 @@
           "data.extra_user_id": "{{user.id}}"
         },
         {
+          "data.caterer_user_id": "{{user.id}}"
+        },
+        {
           "user_condition": {
             "role": "admin"
           }
@@ -148,6 +168,9 @@
         },
         {
           "data.extra_user_id": "{{user.id}}"
+        },
+        {
+          "data.caterer_user_id": "{{user.id}}"
         },
         {
           "user_condition": {
