@@ -1,0 +1,92 @@
+{
+  "name": "ExtraBooking",
+  "type": "object",
+  "properties": {
+    "extra_profile_id": {
+      "type": "string"
+    },
+    "extra_user_id": {
+      "type": "string"
+    },
+    "caterer_id": {
+      "type": "string"
+    },
+    "caterer_name": {
+      "type": "string"
+    },
+    "booking_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "period": {
+      "type": "string",
+      "enum": [
+        "day",
+        "evening",
+        "both"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "confirmed",
+        "declined"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "extra_profile_id",
+    "extra_user_id",
+    "caterer_id",
+    "caterer_name",
+    "booking_date",
+    "period",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "data.extra_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "data.extra_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
