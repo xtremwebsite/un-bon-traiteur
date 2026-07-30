@@ -4,5 +4,6 @@ const toLocalDate = date => {
 };
 
 export const getAvailabilityWindow = () => Array.from({length:30},(_,index)=>{const date=new Date();date.setHours(12,0,0,0);date.setDate(date.getDate()+index);return toLocalDate(date)});
+export const getAvailabilityPreset = preset => getAvailabilityWindow().filter(value=>{const day=new Date(`${value}T12:00:00`).getDay();if(preset==='weekends')return day===0||day===6;if(preset==='weekdays')return day>=1&&day<=5;return true});
 export const sanitizeAvailabilityDates = values => {const allowed=new Set(getAvailabilityWindow());return (values||[]).filter(value=>allowed.has(value)).sort()};
 export const formatAvailabilityDate = value => new Intl.DateTimeFormat('fr-FR',{weekday:'short',day:'numeric',month:'short'}).format(new Date(`${value}T12:00:00`));

@@ -75,6 +75,14 @@
         "format": "date"
       }
     },
+    "availability_period": {
+      "type": "string",
+      "enum": [
+        "day",
+        "evening"
+      ],
+      "default": "day"
+    },
     "mobility_radius_km": {
       "type": "number"
     },
