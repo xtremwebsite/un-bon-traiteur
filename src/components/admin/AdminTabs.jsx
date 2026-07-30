@@ -7,7 +7,8 @@ const tabs = [
   ['subscriptions', 'Abonnements & tarifs'],
   ['catalogs', 'Événements & formats'],
   ['webhooks', 'Webhooks n8n'],
-  ['requests', 'Demandes'],
+  ['quotes', 'Devis classiques'],
+  ['urgent', 'Demandes urgentes'],
   ['reviews', 'Avis'],
 ];
 
