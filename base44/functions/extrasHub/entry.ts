@@ -24,12 +24,14 @@ export default async function(req: Request): Promise<Response> {
     if(body.action==='extra_opportunities'){
       const extras=await base44.asServiceRole.entities.ExtraProfile.filter({created_by_id:user.id},'-created_date',1); const extra=extras[0];
       if(!extra||extra.status!=='approved')return Response.json({error:'Votre profil Extra doit être validé pour consulter les annonces.'},{status:403});
-      let origin=extra.latitude!=null&&extra.longitude!=null?{latitude:extra.latitude,longitude:extra.longitude}:await geocodeLocation(`${extra.address}, ${extra.postal_code} ${extra.city}`);
-      if(!origin)return Response.json({error:'Votre ville n’a pas pu être localisée.'},{status:400});
+      const customCoordinates=body.latitude!=null&&body.longitude!=null&&Number.isFinite(Number(body.latitude))&&Number.isFinite(Number(body.longitude))?{latitude:Number(body.latitude),longitude:Number(body.longitude)}:null;
+      let origin=customCoordinates||(body.city&&body.city!=='Ma position actuelle'?await geocodeLocation(body.city):null)||(extra.latitude!=null&&extra.longitude!=null?{latitude:extra.latitude,longitude:extra.longitude}:await geocodeLocation(`${extra.address}, ${extra.postal_code} ${extra.city}`));
+      if(!origin)return Response.json({error:'La ville recherchée n’a pas pu être localisée.'},{status:400});
+      const radius=Math.min(100,Math.max(1,Number(body.radius_km)||25));
       if(extra.latitude==null||extra.longitude==null)await base44.asServiceRole.entities.ExtraProfile.update(extra.id,origin);
       const [requests,caterers,applications]=await Promise.all([base44.asServiceRole.entities.ExtraRequest.filter({status:'open'},'-event_date',500),base44.asServiceRole.entities.CatererProfile.list('-created_date',500),base44.asServiceRole.entities.ExtraBooking.filter({extra_user_id:user.id},'-created_date',500)]);
       const enriched=await Promise.all(requests.map(async request=>{let coordinates=request.latitude!=null&&request.longitude!=null?{latitude:request.latitude,longitude:request.longitude}:await geocodeLocation(request.location);if(coordinates&&(request.latitude==null||request.longitude==null))await base44.asServiceRole.entities.ExtraRequest.update(request.id,coordinates);const caterer=caterers.find(item=>item.id===request.caterer_id);const application=applications.find(item=>item.extra_request_id===request.id);return coordinates?{...request,caterer_name:caterer?.business_name||'Traiteur',caterer_slug:caterer?.slug||'',distance_km:distanceKm(origin.latitude,origin.longitude,coordinates.latitude,coordinates.longitude),application_status:application?.status||null}:null;}));
-      return Response.json({city:extra.city,radius_km:25,items:enriched.filter(item=>item&&item.distance_km<=25&&item.event_date>=new Date().toISOString().slice(0,10))});
+      return Response.json({city:body.city||extra.city,radius_km:radius,items:enriched.filter(item=>item&&item.distance_km<=radius&&item.event_date>=new Date().toISOString().slice(0,10))});
     }
     if(body.action==='view_request'){
       const request=await base44.asServiceRole.entities.ExtraRequest.get(body.request_id); if(!request)return Response.json({error:'Annonce introuvable'},{status:404});
