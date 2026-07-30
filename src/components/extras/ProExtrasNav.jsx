@@ -1,0 +1,2 @@
+import {Link,useLocation} from 'react-router-dom';
+export default function ProExtrasNav(){const {pathname}=useLocation();return <nav className="mt-5 flex w-fit gap-1 rounded-2xl border bg-card p-1"><Link to="/extras-pro" className={`rounded-xl px-4 py-2 text-sm font-bold ${pathname==='/extras-pro'?'bg-primary text-primary-foreground':'text-muted-foreground'}`}>Publier</Link><Link to="/suivi-extras" className={`rounded-xl px-4 py-2 text-sm font-bold ${pathname==='/suivi-extras'?'bg-primary text-primary-foreground':'text-muted-foreground'}`}>Suivi et historique</Link></nav>;}

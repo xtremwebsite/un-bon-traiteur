@@ -19,6 +19,27 @@ export default async function(req: Request): Promise<Response> {
       const item=existing[0]?await base44.asServiceRole.entities.ExtraProfile.update(existing[0].id,payload):await base44.entities.ExtraProfile.create(payload);
       return Response.json({item});
     }
+    if(['respond_booking','cancel_booking','delete_booking'].includes(body.action)){
+      const booking=await base44.asServiceRole.entities.ExtraBooking.get(body.booking_id);
+      if(!booking)return Response.json({error:'Demande introuvable'},{status:404});
+      const isExtra=booking.extra_user_id===user.id; const isCaterer=booking.created_by_id===user.id;
+      if(!isExtra&&!isCaterer&&user.role!=='admin')return Response.json({error:'Accès refusé'},{status:403});
+      if(body.action==='respond_booking'){
+        if(!isExtra||booking.status!=='pending'||!['confirmed','declined'].includes(body.status))return Response.json({error:'Réponse impossible'},{status:400});
+        let payload={status:body.status};
+        if(body.status==='confirmed'){
+          const extras=await base44.asServiceRole.entities.ExtraProfile.filter({created_by_id:user.id},'-created_date',1); const extra=extras[0];
+          payload={...payload,accepted_at:new Date().toISOString(),extra_name:[extra?.first_name,extra?.last_name].filter(Boolean).join(' '),extra_phone:extra?.phone||'',extra_email:extra?.email||user.email,extra_city:extra?.city||'',extra_skills:extra?.skills||[],extra_experience:extra?.experience_details||''};
+        }
+        const item=await base44.asServiceRole.entities.ExtraBooking.update(booking.id,payload); return Response.json({item});
+      }
+      if(body.action==='cancel_booking'){
+        if(!['pending','confirmed'].includes(booking.status))return Response.json({error:'Cette demande ne peut plus être annulée'},{status:400});
+        const item=await base44.asServiceRole.entities.ExtraBooking.update(booking.id,{status:'cancelled',cancelled_at:new Date().toISOString(),cancelled_by:isExtra?'extra':'caterer'}); return Response.json({item});
+      }
+      if(!['declined','cancelled','expired'].includes(booking.status))return Response.json({error:'Annulez d’abord la demande avant de la supprimer'},{status:400});
+      await base44.asServiceRole.entities.ExtraBooking.delete(booking.id); return Response.json({deleted:true});
+    }
     const profiles=await base44.entities.CatererProfile.filter({created_by_id:user.id},'-created_date',1); const caterer=profiles[0];
     if(user.role!=='admin'&&!caterer)return Response.json({error:'Accès réservé aux traiteurs'},{status:403});
     if(body.action==='directory'){
@@ -32,7 +53,7 @@ export default async function(req: Request): Promise<Response> {
       const extra=await base44.asServiceRole.entities.ExtraProfile.get(data.extra_id); if(!extra?.active||extra.status!=='approved')return Response.json({error:'Profil indisponible'},{status:404});
       const slots=new Map((extra.availability_slots||[]).map(slot=>[slot.date,slot.period])); if(dates.some(date=>!slots.has(date)))return Response.json({error:'Un jour sélectionné n’est plus disponible.'},{status:409});
       const existing=await base44.asServiceRole.entities.ExtraBooking.filter({extra_profile_id:extra.id,status:{$in:['pending','confirmed']}},'-booking_date',500); if(dates.some(date=>existing.some(item=>item.booking_date===date)))return Response.json({error:'Un jour sélectionné vient d’être réservé.'},{status:409});
-      const items=dates.map(date=>({extra_profile_id:extra.id,extra_user_id:extra.created_by_id,extra_name:[extra.first_name,extra.display_last_name?extra.last_name:''].filter(Boolean).join(' '),caterer_id:caterer.id,caterer_name:caterer.business_name,booking_date:date,period:slots.get(date),location:cleanText(data.location),service_details:cleanText(data.service_details),status:'pending'})); const created=await base44.entities.ExtraBooking.bulkCreate(items); return Response.json({items:created});
+      const items=dates.map(date=>({extra_profile_id:extra.id,extra_user_id:extra.created_by_id,extra_name:extra.first_name||'Extra',caterer_id:caterer.id,caterer_name:caterer.business_name,caterer_slug:caterer.slug||'',caterer_contact_name:caterer.contact_name||'',caterer_phone:caterer.phone||'',caterer_email:user.email||'',caterer_address:caterer.address||'',caterer_city:caterer.city||'',booking_date:date,period:slots.get(date),location:cleanText(data.location),service_details:cleanText(data.service_details),status:'pending'})); const created=await base44.entities.ExtraBooking.bulkCreate(items); return Response.json({items:created});
     }
     if(body.action==='contact'){
       const data=body.data||{}; const message=cleanText(data.message);

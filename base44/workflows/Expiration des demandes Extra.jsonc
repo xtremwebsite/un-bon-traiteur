@@ -1,0 +1,45 @@
+{
+  "name": "Expiration des demandes Extra",
+  "description": "Retire des demandes actives celles rest\u00e9es sans r\u00e9ponse pendant plus de 48 heures, tout en les conservant dans l\u2019historique.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "schedule_mode": "recurring",
+      "cron_expression": "0 * * * *",
+      "timezone": "UTC",
+      "events": [],
+      "one_time_date": null,
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "expiration_demandes_extra",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "expirer_demandes": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "expireExtraBookings",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Expirer les demandes",
+            "description": "Sans r\u00e9ponse depuis 48 h"
+          }
+        }
+      }
+    ]
+  }
+}

@@ -30,6 +30,7 @@ import AccountPortal from '@/pages/AccountPortal';
 import ProOpportunities from '@/pages/ProOpportunities';
 import ProExtras from '@/pages/ProExtras';
 import ExtraRegistration from '@/pages/ExtraRegistration';
+import ProExtraTracking from '@/pages/ProExtraTracking';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -79,6 +80,7 @@ const AuthenticatedApp = () => {
       </Route>
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=/extras-pro" replace />} />}>
         <Route path="/extras-pro" element={<ProExtras />} />
+        <Route path="/suivi-extras" element={<ProExtraTracking />} />
       </Route>
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=/inscription-extra" replace />} />}>
         <Route path="/inscription-extra" element={<ExtraRegistration />} />
