@@ -83,6 +83,30 @@
       ],
       "default": "day"
     },
+    "availability_slots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "period": {
+            "type": "string",
+            "enum": [
+              "day",
+              "evening",
+              "both"
+            ]
+          }
+        },
+        "required": [
+          "date",
+          "period"
+        ]
+      }
+    },
     "mobility_radius_km": {
       "type": "number"
     },
