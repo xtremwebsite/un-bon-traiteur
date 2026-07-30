@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { geocodeLocation, distanceKm } from '../../shared/geolocation.ts';
 
 function ageFrom(date) { if (!date) return null; const birth=new Date(`${date}T00:00:00`); const today=new Date(); let age=today.getFullYear()-birth.getFullYear(); if(today.getMonth()<birth.getMonth()||(today.getMonth()===birth.getMonth()&&today.getDate()<birth.getDate()))age--; return age; }
 function cleanText(value) { return String(value||'').replace(/[<>&]/g,'').trim(); }
@@ -14,28 +15,54 @@ export default async function(req: Request): Promise<Response> {
       const caterers=await base44.entities.CatererProfile.filter({created_by_id:user.id},'-created_date',1);
       if(caterers.length)return Response.json({error:'Cette adresse e-mail est déjà associée à un compte traiteur.'},{status:409});
       const {id,status,admin_comment,created_by,created_by_id,created_date,updated_date,...profileData}=input;
-      const payload={...profileData,status:'pending',admin_comment:'',active:true};
+      const coordinates=await geocodeLocation(`${profileData.address}, ${profileData.postal_code} ${profileData.city}`);
+      const payload={...profileData,...(coordinates||{}),status:'pending',admin_comment:'',active:true};
       const existing=await base44.entities.ExtraProfile.filter({created_by_id:user.id},'-created_date',1);
       const item=existing[0]?await base44.asServiceRole.entities.ExtraProfile.update(existing[0].id,payload):await base44.entities.ExtraProfile.create(payload);
       return Response.json({item});
     }
+    if(body.action==='extra_opportunities'){
+      const extras=await base44.asServiceRole.entities.ExtraProfile.filter({created_by_id:user.id},'-created_date',1); const extra=extras[0];
+      if(!extra||extra.status!=='approved')return Response.json({error:'Votre profil Extra doit être validé pour consulter les annonces.'},{status:403});
+      let origin=extra.latitude!=null&&extra.longitude!=null?{latitude:extra.latitude,longitude:extra.longitude}:await geocodeLocation(`${extra.address}, ${extra.postal_code} ${extra.city}`);
+      if(!origin)return Response.json({error:'Votre ville n’a pas pu être localisée.'},{status:400});
+      if(extra.latitude==null||extra.longitude==null)await base44.asServiceRole.entities.ExtraProfile.update(extra.id,origin);
+      const [requests,caterers,applications]=await Promise.all([base44.asServiceRole.entities.ExtraRequest.filter({status:'open'},'-event_date',500),base44.asServiceRole.entities.CatererProfile.list('-created_date',500),base44.asServiceRole.entities.ExtraBooking.filter({extra_user_id:user.id},'-created_date',500)]);
+      const enriched=await Promise.all(requests.map(async request=>{let coordinates=request.latitude!=null&&request.longitude!=null?{latitude:request.latitude,longitude:request.longitude}:await geocodeLocation(request.location);if(coordinates&&(request.latitude==null||request.longitude==null))await base44.asServiceRole.entities.ExtraRequest.update(request.id,coordinates);const caterer=caterers.find(item=>item.id===request.caterer_id);const application=applications.find(item=>item.extra_request_id===request.id);return coordinates?{...request,caterer_name:caterer?.business_name||'Traiteur',caterer_slug:caterer?.slug||'',distance_km:distanceKm(origin.latitude,origin.longitude,coordinates.latitude,coordinates.longitude),application_status:application?.status||null}:null;}));
+      return Response.json({city:extra.city,radius_km:25,items:enriched.filter(item=>item&&item.distance_km<=25&&item.event_date>=new Date().toISOString().slice(0,10))});
+    }
+    if(body.action==='view_request'){
+      const request=await base44.asServiceRole.entities.ExtraRequest.get(body.request_id); if(!request)return Response.json({error:'Annonce introuvable'},{status:404});
+      const item=await base44.asServiceRole.entities.ExtraRequest.update(request.id,{view_count:Number(request.view_count||0)+1}); return Response.json({view_count:item.view_count});
+    }
+    if(body.action==='apply_to_request'){
+      const extras=await base44.asServiceRole.entities.ExtraProfile.filter({created_by_id:user.id},'-created_date',1); const extra=extras[0];
+      if(!extra||extra.status!=='approved'||!extra.active)return Response.json({error:'Votre profil Extra doit être validé.'},{status:403});
+      const request=await base44.asServiceRole.entities.ExtraRequest.get(body.request_id); if(!request||request.status!=='open')return Response.json({error:'Cette annonce n’est plus disponible.'},{status:409});
+      const existing=await base44.asServiceRole.entities.ExtraBooking.filter({extra_request_id:request.id,extra_user_id:user.id,status:{$in:['pending','confirmed']}},'-created_date',1); if(existing.length)return Response.json({error:'Vous avez déjà candidaté à cette annonce.'},{status:409});
+      const caterer=await base44.asServiceRole.entities.CatererProfile.get(request.caterer_id); if(!caterer)return Response.json({error:'Traiteur introuvable'},{status:404});
+      const period=request.start_time&&Number(request.start_time.slice(0,2))>=17?'evening':'day';
+      const item=await base44.entities.ExtraBooking.create({extra_profile_id:extra.id,extra_user_id:user.id,extra_request_id:request.id,initiated_by:'extra',extra_name:[extra.first_name,extra.last_name].filter(Boolean).join(' '),extra_phone:extra.phone||'',extra_email:extra.email||user.email,extra_city:extra.city||'',extra_skills:extra.skills||[],extra_experience:extra.experience_details||'',caterer_id:caterer.id,caterer_user_id:request.created_by_id,caterer_name:caterer.business_name,caterer_slug:caterer.slug||'',caterer_contact_name:caterer.contact_name||'',caterer_phone:caterer.phone||'',caterer_email:request.created_by||'',caterer_address:caterer.address||'',caterer_city:caterer.city||'',booking_date:request.event_date,period,location:request.location,service_details:request.description,status:'pending'});
+      return Response.json({item});
+    }
     if(['respond_booking','cancel_booking','delete_booking'].includes(body.action)){
-      const booking=await base44.asServiceRole.entities.ExtraBooking.get(body.booking_id);
-      if(!booking)return Response.json({error:'Demande introuvable'},{status:404});
-      const isExtra=booking.extra_user_id===user.id; const isCaterer=booking.created_by_id===user.id;
+      const booking=await base44.asServiceRole.entities.ExtraBooking.get(body.booking_id); if(!booking)return Response.json({error:'Demande introuvable'},{status:404});
+      const myCaterers=await base44.asServiceRole.entities.CatererProfile.filter({created_by_id:user.id},'-created_date',1); const myCaterer=myCaterers[0];
+      const isExtra=booking.extra_user_id===user.id; const isCaterer=booking.created_by_id===user.id||booking.caterer_user_id===user.id||booking.caterer_id===myCaterer?.id;
       if(!isExtra&&!isCaterer&&user.role!=='admin')return Response.json({error:'Accès refusé'},{status:403});
       if(body.action==='respond_booking'){
-        if(!isExtra||booking.status!=='pending'||!['confirmed','declined'].includes(body.status))return Response.json({error:'Réponse impossible'},{status:400});
+        const responderAllowed=booking.initiated_by==='extra'?isCaterer:isExtra;
+        if(!responderAllowed||booking.status!=='pending'||!['confirmed','declined'].includes(body.status))return Response.json({error:'Réponse impossible'},{status:400});
         let payload={status:body.status};
-        if(body.status==='confirmed'){
-          const extras=await base44.asServiceRole.entities.ExtraProfile.filter({created_by_id:user.id},'-created_date',1); const extra=extras[0];
-          payload={...payload,accepted_at:new Date().toISOString(),extra_name:[extra?.first_name,extra?.last_name].filter(Boolean).join(' '),extra_phone:extra?.phone||'',extra_email:extra?.email||user.email,extra_city:extra?.city||'',extra_skills:extra?.skills||[],extra_experience:extra?.experience_details||''};
-        }
-        const item=await base44.asServiceRole.entities.ExtraBooking.update(booking.id,payload); return Response.json({item});
+        if(body.status==='confirmed'){payload={...payload,accepted_at:new Date().toISOString()};if(booking.initiated_by!=='extra'){const extras=await base44.asServiceRole.entities.ExtraProfile.filter({created_by_id:user.id},'-created_date',1);const extra=extras[0];payload={...payload,extra_name:[extra?.first_name,extra?.last_name].filter(Boolean).join(' '),extra_phone:extra?.phone||'',extra_email:extra?.email||user.email,extra_city:extra?.city||'',extra_skills:extra?.skills||[],extra_experience:extra?.experience_details||''};}}
+        const item=await base44.asServiceRole.entities.ExtraBooking.update(booking.id,payload);
+        if(booking.extra_request_id&&body.status==='confirmed'){const request=await base44.asServiceRole.entities.ExtraRequest.get(booking.extra_request_id);const confirmed=await base44.asServiceRole.entities.ExtraBooking.filter({extra_request_id:booking.extra_request_id,status:'confirmed'},'-created_date',500);if(request&&confirmed.length>=Number(request.required_count||1))await base44.asServiceRole.entities.ExtraRequest.update(request.id,{status:'filled'});}
+        return Response.json({item});
       }
       if(body.action==='cancel_booking'){
         if(!['pending','confirmed'].includes(booking.status))return Response.json({error:'Cette demande ne peut plus être annulée'},{status:400});
-        const item=await base44.asServiceRole.entities.ExtraBooking.update(booking.id,{status:'cancelled',cancelled_at:new Date().toISOString(),cancelled_by:isExtra?'extra':'caterer'}); return Response.json({item});
+        const item=await base44.asServiceRole.entities.ExtraBooking.update(booking.id,{status:'cancelled',cancelled_at:new Date().toISOString(),cancelled_by:isExtra?'extra':'caterer'});
+        if(booking.extra_request_id)await base44.asServiceRole.entities.ExtraRequest.update(booking.extra_request_id,{status:'open'}); return Response.json({item});
       }
       if(!['declined','cancelled','expired'].includes(booking.status))return Response.json({error:'Annulez d’abord la demande avant de la supprimer'},{status:400});
       await base44.asServiceRole.entities.ExtraBooking.delete(booking.id); return Response.json({deleted:true});
@@ -43,7 +70,7 @@ export default async function(req: Request): Promise<Response> {
     const profiles=await base44.entities.CatererProfile.filter({created_by_id:user.id},'-created_date',1); const caterer=profiles[0];
     if(user.role!=='admin'&&!caterer)return Response.json({error:'Accès réservé aux traiteurs'},{status:403});
     if(body.action==='directory'){
-      const [extras,ratings,requests,bookings,myBookings]=await Promise.all([base44.asServiceRole.entities.ExtraProfile.filter({active:true,available:true,status:'approved'},'-updated_date',500),base44.asServiceRole.entities.ExtraRecommendation.list('-created_date',1000),base44.entities.ExtraRequest.list('-created_date',100),base44.asServiceRole.entities.ExtraBooking.filter({status:{$in:['pending','confirmed']}},'-booking_date',1000),base44.entities.ExtraBooking.list('-created_date',500)]);
+      const [extras,ratings,requests,bookings,allBookings]=await Promise.all([base44.asServiceRole.entities.ExtraProfile.filter({active:true,available:true,status:'approved'},'-updated_date',500),base44.asServiceRole.entities.ExtraRecommendation.list('-created_date',1000),base44.entities.ExtraRequest.list('-created_date',100),base44.asServiceRole.entities.ExtraBooking.filter({status:{$in:['pending','confirmed']}},'-booking_date',1000),base44.asServiceRole.entities.ExtraBooking.list('-created_date',500)]); const myBookings=allBookings.filter(item=>item.created_by_id===user.id||item.caterer_user_id===user.id||item.caterer_id===caterer?.id);
       const items=extras.map(extra=>{const reviews=ratings.filter(item=>item.extra_id===extra.id);const average=reviews.length?reviews.reduce((sum,item)=>sum+item.rating,0)/reviews.length:0;const {date_of_birth,address,email,phone,last_name,created_by,created_by_id,...publicExtra}=extra;return {...publicExtra,last_name:extra.display_last_name?last_name:'',email:extra.display_email?email:'',phone:extra.display_phone?phone:'',age:ageFrom(date_of_birth),average_rating:average,recommendation_count:reviews.length,booking_days:bookings.filter(item=>item.extra_profile_id===extra.id).map(({booking_date,status})=>({booking_date,status})),recommendations:reviews.map(({rating,comment,caterer_name,mission_date})=>({rating,comment,caterer_name,mission_date}))}});
       return Response.json({items,requests,bookings:myBookings,caterer:caterer?{id:caterer.id,business_name:caterer.business_name}:null});
     }
@@ -53,7 +80,7 @@ export default async function(req: Request): Promise<Response> {
       const extra=await base44.asServiceRole.entities.ExtraProfile.get(data.extra_id); if(!extra?.active||extra.status!=='approved')return Response.json({error:'Profil indisponible'},{status:404});
       const slots=new Map((extra.availability_slots||[]).map(slot=>[slot.date,slot.period])); if(dates.some(date=>!slots.has(date)))return Response.json({error:'Un jour sélectionné n’est plus disponible.'},{status:409});
       const existing=await base44.asServiceRole.entities.ExtraBooking.filter({extra_profile_id:extra.id,status:{$in:['pending','confirmed']}},'-booking_date',500); if(dates.some(date=>existing.some(item=>item.booking_date===date)))return Response.json({error:'Un jour sélectionné vient d’être réservé.'},{status:409});
-      const items=dates.map(date=>({extra_profile_id:extra.id,extra_user_id:extra.created_by_id,extra_name:extra.first_name||'Extra',caterer_id:caterer.id,caterer_name:caterer.business_name,caterer_slug:caterer.slug||'',caterer_contact_name:caterer.contact_name||'',caterer_phone:caterer.phone||'',caterer_email:user.email||'',caterer_address:caterer.address||'',caterer_city:caterer.city||'',booking_date:date,period:slots.get(date),location:cleanText(data.location),service_details:cleanText(data.service_details),status:'pending'})); const created=await base44.entities.ExtraBooking.bulkCreate(items); return Response.json({items:created});
+      const items=dates.map(date=>({extra_profile_id:extra.id,extra_user_id:extra.created_by_id,initiated_by:'caterer',extra_name:extra.first_name||'Extra',caterer_id:caterer.id,caterer_user_id:user.id,caterer_name:caterer.business_name,caterer_slug:caterer.slug||'',caterer_contact_name:caterer.contact_name||'',caterer_phone:caterer.phone||'',caterer_email:user.email||'',caterer_address:caterer.address||'',caterer_city:caterer.city||'',booking_date:date,period:slots.get(date),location:cleanText(data.location),service_details:cleanText(data.service_details),status:'pending'})); const created=await base44.entities.ExtraBooking.bulkCreate(items); return Response.json({items:created});
     }
     if(body.action==='contact'){
       const data=body.data||{}; const message=cleanText(data.message);
@@ -63,7 +90,7 @@ export default async function(req: Request): Promise<Response> {
       await base44.asServiceRole.integrations.Core.SendEmail({to:recipient,from_name:'Un Bon Traiteur',subject:`Nouveau contact de ${cleanText(caterer?.business_name||'Un traiteur')}`,body:`Bonjour ${cleanText(extra.first_name)||''},\n\n${message}\n\nPour répondre à ${cleanText(caterer?.business_name||'ce traiteur')}, écrivez à ${cleanText(user.email)}.\n\nMessage transmis par Un Bon Traiteur.`});
       return Response.json({sent:true});
     }
-    if(body.action==='create_request'){const data=body.data||{};if(!data.role||!data.event_date||!data.location||!data.description)return Response.json({error:'Informations de mission incomplètes'},{status:400});const created=await base44.entities.ExtraRequest.create({...data,caterer_id:caterer.id,required_count:Number(data.required_count)||1,hourly_rate:Number(data.hourly_rate)||undefined,status:'open'});return Response.json({item:created});}
+    if(body.action==='create_request'){const data=body.data||{};if(!data.role||!data.event_date||!data.location||!data.description)return Response.json({error:'Informations de mission incomplètes'},{status:400});const coordinates=await geocodeLocation(data.location);const created=await base44.entities.ExtraRequest.create({...data,...(coordinates||{}),caterer_id:caterer.id,required_count:Number(data.required_count)||1,hourly_rate:Number(data.hourly_rate)||undefined,view_count:0,status:'open'});return Response.json({item:created});}
     if(body.action==='recommend'){const data=body.data||{};const rating=Number(data.rating);if(!data.extra_id||rating<1||rating>5||!data.comment)return Response.json({error:'Note et recommandation requises'},{status:400});const existing=await base44.entities.ExtraRecommendation.filter({extra_id:data.extra_id,caterer_id:caterer.id},'-created_date',1);const payload={extra_id:data.extra_id,caterer_id:caterer.id,caterer_name:caterer.business_name,rating,comment:data.comment,mission_date:data.mission_date||undefined};const item=existing[0]?await base44.entities.ExtraRecommendation.update(existing[0].id,payload):await base44.entities.ExtraRecommendation.create(payload);return Response.json({item});}
     return Response.json({error:'Action inconnue'},{status:400});
   } catch(error) { console.error('extrasHub',error); return Response.json({error:error.message},{status:500}); }
