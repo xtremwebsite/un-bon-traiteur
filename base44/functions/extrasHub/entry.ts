@@ -7,18 +7,27 @@ export default async function(req: Request): Promise<Response> {
   try {
     const base44=createClientFromRequest(req); const user=await base44.auth.me();
     if(!user)return Response.json({error:'Non autorisé'},{status:401});
+    const body=await req.json();
+    if(body.action==='save_profile'){
+      const input=body.data||{}; const required=['first_name','last_name','email','phone','date_of_birth','address','postal_code','city'];
+      if(required.some(field=>!cleanText(input[field])))return Response.json({error:'Complétez tous les champs obligatoires.'},{status:400});
+      const {id,status,admin_comment,created_by,created_by_id,created_date,updated_date,...profileData}=input;
+      const payload={...profileData,status:'pending',admin_comment:'',active:true};
+      const existing=await base44.entities.ExtraProfile.filter({created_by_id:user.id},'-created_date',1);
+      const item=existing[0]?await base44.asServiceRole.entities.ExtraProfile.update(existing[0].id,payload):await base44.entities.ExtraProfile.create(payload);
+      return Response.json({item});
+    }
     const profiles=await base44.entities.CatererProfile.filter({created_by_id:user.id},'-created_date',1); const caterer=profiles[0];
     if(user.role!=='admin'&&!caterer)return Response.json({error:'Accès réservé aux traiteurs'},{status:403});
-    const body=await req.json();
     if(body.action==='directory'){
-      const [extras,ratings,requests]=await Promise.all([base44.asServiceRole.entities.ExtraProfile.filter({active:true,available:true},'-updated_date',500),base44.asServiceRole.entities.ExtraRecommendation.list('-created_date',1000),base44.entities.ExtraRequest.list('-created_date',100)]);
+      const [extras,ratings,requests]=await Promise.all([base44.asServiceRole.entities.ExtraProfile.filter({active:true,available:true,status:'approved'},'-updated_date',500),base44.asServiceRole.entities.ExtraRecommendation.list('-created_date',1000),base44.entities.ExtraRequest.list('-created_date',100)]);
       const items=extras.map(extra=>{const reviews=ratings.filter(item=>item.extra_id===extra.id);const average=reviews.length?reviews.reduce((sum,item)=>sum+item.rating,0)/reviews.length:0;const {date_of_birth,address,email,phone,last_name,created_by,created_by_id,...publicExtra}=extra;return {...publicExtra,last_name:extra.display_last_name?last_name:'',email:extra.display_email?email:'',phone:extra.display_phone?phone:'',age:ageFrom(date_of_birth),average_rating:average,recommendation_count:reviews.length,recommendations:reviews.map(({rating,comment,caterer_name,mission_date})=>({rating,comment,caterer_name,mission_date}))}});
       return Response.json({items,requests,caterer:caterer?{id:caterer.id,business_name:caterer.business_name}:null});
     }
     if(body.action==='contact'){
       const data=body.data||{}; const message=cleanText(data.message);
       if(!data.extra_id||message.length<10)return Response.json({error:'Écrivez un message d’au moins 10 caractères'},{status:400});
-      const extra=await base44.asServiceRole.entities.ExtraProfile.get(data.extra_id); if(!extra?.active)return Response.json({error:'Profil indisponible'},{status:404});
+      const extra=await base44.asServiceRole.entities.ExtraProfile.get(data.extra_id); if(!extra?.active||extra.status!=='approved')return Response.json({error:'Profil indisponible'},{status:404});
       const recipient=extra.created_by||extra.email; if(!recipient)return Response.json({error:'Cet Extra ne peut pas recevoir de message'},{status:400});
       await base44.asServiceRole.integrations.Core.SendEmail({to:recipient,from_name:'Un Bon Traiteur',subject:`Nouveau contact de ${cleanText(caterer?.business_name||'Un traiteur')}`,body:`Bonjour ${cleanText(extra.first_name)||''},\n\n${message}\n\nPour répondre à ${cleanText(caterer?.business_name||'ce traiteur')}, écrivez à ${cleanText(user.email)}.\n\nMessage transmis par Un Bon Traiteur.`});
       return Response.json({sent:true});

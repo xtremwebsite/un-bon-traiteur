@@ -19,6 +19,7 @@ export default function Register() {
   const [showOtp, setShowOtp] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const next = new URLSearchParams(window.location.search).get("next") || "/";
+  const isExtra = next === "/inscription-extra";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -128,8 +129,8 @@ export default function Register() {
   return (
     <AuthLayout
       icon={UserPlus}
-      title="Create your account"
-      subtitle="Sign up to get started"
+      title={isExtra ? "Devenir Extra" : "Create your account"}
+      subtitle={isExtra ? "Créez votre compte puis complétez votre profil professionnel" : "Sign up to get started"}
       footer={
         <>
           Already have an account?{" "}
@@ -145,7 +146,7 @@ export default function Register() {
         onClick={handleGoogle}
       >
         <GoogleIcon className="w-5 h-5 mr-2" />
-        Continue with Google
+        {isExtra ? "Continuer avec Google" : "Continue with Google"}
       </Button>
 
       <div className="relative mb-6">
@@ -220,7 +221,7 @@ export default function Register() {
               Creating account...
             </>
           ) : (
-            "Create account"
+            isExtra ? "Créer mon compte Extra" : "Create account"
           )}
         </Button>
       </form>

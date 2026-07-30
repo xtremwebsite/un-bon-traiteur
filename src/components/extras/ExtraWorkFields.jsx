@@ -1,5 +1,5 @@
 export default function ExtraWorkFields({data,set}) {
-  return <section className="space-y-4 rounded-2xl border p-4">
+  return <section id="experience" className="scroll-mt-24 space-y-4 rounded-2xl border p-4">
     <h2 className="text-lg font-bold">Expérience et conditions souhaitées</h2>
     <label className="block">Expérience <span className="font-normal text-muted-foreground">(facultatif)</span><textarea value={data.experience_details||''} onChange={set('experience_details')} className="mt-1 min-h-24 w-full rounded-xl border bg-background p-3" placeholder="Missions, établissements, spécialités…"/></label>
     <div className="grid gap-4 sm:grid-cols-2">

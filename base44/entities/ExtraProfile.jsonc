@@ -27,6 +27,20 @@
     "city": {
       "type": "string"
     },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "changes_requested",
+        "rejected",
+        "suspended"
+      ],
+      "default": "pending"
+    },
+    "admin_comment": {
+      "type": "string"
+    },
     "skills": {
       "type": "array",
       "items": {
@@ -111,6 +125,17 @@
       "default": "site"
     }
   },
+  "required": [
+    "first_name",
+    "last_name",
+    "email",
+    "phone",
+    "date_of_birth",
+    "address",
+    "postal_code",
+    "city",
+    "status"
+  ],
   "rls": {
     "read": {
       "$or": [
