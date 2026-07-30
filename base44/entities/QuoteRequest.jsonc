@@ -20,6 +20,28 @@
     "caterer_id": {
       "type": "string"
     },
+    "client_decision": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "declined"
+      ],
+      "default": "pending"
+    },
+    "professional_decision": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "declined"
+      ],
+      "default": "pending"
+    },
+    "last_activity_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "event_type": {
       "type": "string"
     },

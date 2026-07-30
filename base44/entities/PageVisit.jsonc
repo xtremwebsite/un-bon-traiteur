@@ -1,0 +1,48 @@
+{
+  "name": "PageVisit",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string"
+    },
+    "page_path": {
+      "type": "string"
+    },
+    "visit_day": {
+      "type": "string",
+      "format": "date"
+    },
+    "last_seen": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "session_id",
+    "page_path",
+    "visit_day",
+    "last_seen"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

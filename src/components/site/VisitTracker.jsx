@@ -1,0 +1,5 @@
+import {useEffect} from 'react';
+import {useLocation} from 'react-router-dom';
+import {base44} from '@/api/base44Client';
+const consentAccepted=()=>{const saved=localStorage.getItem('cookie-consent');return saved&&JSON.parse(saved).value==='accepted'};
+export default function VisitTracker(){const{pathname}=useLocation();useEffect(()=>{let timer;const send=()=>{if(!consentAccepted()||/^\/(admin|login|register|forgot-password|reset-password|tableau-de-bord-traiteur|mon-espace|inscription-extra|inscription-traiteur|opportunites-pro|extras-pro)/.test(pathname))return;let sessionId=sessionStorage.getItem('visit-session-id');if(!sessionId){sessionId=crypto.randomUUID();sessionStorage.setItem('visit-session-id',sessionId)}base44.functions.invoke('trackPageVisit',{session_id:sessionId,page_path:pathname})};send();timer=setInterval(send,120000);window.addEventListener('cookie-consent-changed',send);return()=>{clearInterval(timer);window.removeEventListener('cookie-consent-changed',send)}},[pathname]);return null;}

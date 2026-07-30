@@ -1,0 +1,61 @@
+{
+  "name": "QuoteActivity",
+  "type": "object",
+  "properties": {
+    "quote_id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "status",
+        "message",
+        "client_decision",
+        "professional_decision"
+      ]
+    },
+    "label": {
+      "type": "string"
+    },
+    "details": {
+      "type": "string"
+    },
+    "actor": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "client",
+        "professional",
+        "system"
+      ]
+    }
+  },
+  "required": [
+    "quote_id",
+    "type",
+    "label",
+    "actor"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

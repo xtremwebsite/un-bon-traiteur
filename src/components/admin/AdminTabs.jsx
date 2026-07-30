@@ -1,5 +1,6 @@
 const tabs = [
   ['overview', 'Vue d’ensemble'],
+  ['analytics', 'Statistiques'],
   ['professionals', 'Professionnels'],
   ['extras', 'Validation Extras'],
   ['users', 'Particuliers'],

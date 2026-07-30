@@ -16,6 +16,7 @@ import Guides from '@/pages/Guides';
 import ProSpace from '@/pages/ProSpace';
 import Legal from '@/pages/Legal';
 import CookieBanner from '@/components/site/CookieBanner';
+import VisitTracker from '@/components/site/VisitTracker';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
@@ -105,6 +106,7 @@ function App() {
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ScrollToTop />
+          <VisitTracker />
           <AuthenticatedApp />
           <CookieBanner />
         </Router>
