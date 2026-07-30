@@ -11,10 +11,46 @@
     "extra_name": {
       "type": "string"
     },
+    "extra_phone": {
+      "type": "string"
+    },
+    "extra_email": {
+      "type": "string"
+    },
+    "extra_city": {
+      "type": "string"
+    },
+    "extra_skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "extra_experience": {
+      "type": "string"
+    },
     "caterer_id": {
       "type": "string"
     },
     "caterer_name": {
+      "type": "string"
+    },
+    "caterer_slug": {
+      "type": "string"
+    },
+    "caterer_contact_name": {
+      "type": "string"
+    },
+    "caterer_phone": {
+      "type": "string"
+    },
+    "caterer_email": {
+      "type": "string"
+    },
+    "caterer_address": {
+      "type": "string"
+    },
+    "caterer_city": {
       "type": "string"
     },
     "booking_date": {
@@ -40,9 +76,26 @@
       "enum": [
         "pending",
         "confirmed",
-        "declined"
+        "declined",
+        "cancelled",
+        "expired"
       ],
       "default": "pending"
+    },
+    "accepted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "cancelled_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "cancelled_by": {
+      "type": "string",
+      "enum": [
+        "extra",
+        "caterer"
+      ]
     }
   },
   "required": [
@@ -76,6 +129,9 @@
     "update": {
       "$or": [
         {
+          "created_by_id": "{{user.id}}"
+        },
+        {
           "data.extra_user_id": "{{user.id}}"
         },
         {
@@ -89,6 +145,9 @@
       "$or": [
         {
           "created_by_id": "{{user.id}}"
+        },
+        {
+          "data.extra_user_id": "{{user.id}}"
         },
         {
           "user_condition": {
