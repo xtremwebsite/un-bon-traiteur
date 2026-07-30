@@ -10,6 +10,15 @@
         "user"
       ]
     },
+    "account_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "verified",
+        "suspended"
+      ],
+      "default": "pending"
+    },
     "subscription_plan": {
       "type": "string",
       "enum": [

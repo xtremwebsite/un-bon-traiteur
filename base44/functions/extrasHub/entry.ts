@@ -11,6 +11,8 @@ export default async function(req: Request): Promise<Response> {
     if(body.action==='save_profile'){
       const input=body.data||{}; const required=['first_name','last_name','email','phone','date_of_birth','address','postal_code','city'];
       if(required.some(field=>!cleanText(input[field])))return Response.json({error:'Complétez tous les champs obligatoires.'},{status:400});
+      const caterers=await base44.entities.CatererProfile.filter({created_by_id:user.id},'-created_date',1);
+      if(caterers.length)return Response.json({error:'Cette adresse e-mail est déjà associée à un compte traiteur.'},{status:409});
       const {id,status,admin_comment,created_by,created_by_id,created_date,updated_date,...profileData}=input;
       const payload={...profileData,status:'pending',admin_comment:'',active:true};
       const existing=await base44.entities.ExtraProfile.filter({created_by_id:user.id},'-created_date',1);
