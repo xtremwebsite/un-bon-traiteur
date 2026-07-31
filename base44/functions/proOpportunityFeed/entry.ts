@@ -8,8 +8,12 @@ export default async function(req) {
     if (!user) return Response.json({ error: 'Non autorisé' }, { status: 401 });
     const body = await req.json().catch(() => ({}));
     const profiles = await base44.asServiceRole.entities.CatererProfile.filter({ created_by_id: user.id }, '-created_date', 1);
-    const profile = profiles[0];
+    let profile = profiles[0];
     if (user.role !== 'admin' && !profile) return Response.json({ error: 'Accès réservé aux professionnels' }, { status: 403 });
+    if (profile && (!Number.isFinite(profile.latitude) || !Number.isFinite(profile.longitude))) {
+      const point = await geocodeLocation([profile.address, profile.postal_code, profile.city].filter(Boolean).join(', '));
+      if (point) profile = await base44.asServiceRole.entities.CatererProfile.update(profile.id, point);
+    }
     const subscribed = user.role === 'admin' || (['active', 'trialing'].includes(user.subscription_status) && ['bronze', 'argent', 'or'].includes(user.subscription_plan));
     if (['view', 'respond'].includes(body.action)) {
       if (!['quote', 'urgent'].includes(body.kind)) return Response.json({ error: 'Type de demande invalide' }, { status: 400 });
@@ -40,7 +44,7 @@ export default async function(req) {
       const requestInteractions = interactions.filter(interaction => interaction.request_id === item.id && interaction.request_kind === item.kind);
       const summary = { id: item.id, kind: item.kind, reference: item.reference, caterer_id: item.caterer_id, event_type: item.event_type, event_date: item.event_date, event_time: item.event_time, guest_count: item.guest_count, location: item.location, address: item.address, postal_code: item.postal_code, city: item.city, budget: item.budget, format: item.format, status: item.status, radius_km: item.radius_km, view_count: requestInteractions.filter(interaction => interaction.interaction_type === 'view').length, response_count: requestInteractions.filter(interaction => interaction.interaction_type === 'response').length, ...point };
       return subscribed ? { ...summary, message: item.message, service_need: item.service_need, first_name: item.first_name, last_name: item.last_name, email: item.email, phone: item.phone } : summary;
-    }).filter(Boolean).filter(item => user.role === 'admin' || item.kind !== 'quote' || (item.caterer_id ? item.caterer_id === profile?.id : Number.isFinite(profile?.latitude) && Number.isFinite(profile?.longitude) && distanceKm(profile.latitude, profile.longitude, item.latitude, item.longitude) <= Number(item.radius_km || 50)));
+    }).filter(Boolean).filter(item => user.role === 'admin' || item.kind !== 'quote' || (item.caterer_id ? item.caterer_id === profile?.id : !Number.isFinite(profile?.latitude) || !Number.isFinite(profile?.longitude) || distanceKm(profile.latitude, profile.longitude, item.latitude, item.longitude) <= Number(item.radius_km || 50)));
     return Response.json({ items, subscribed, profile: profile ? { business_name: profile.business_name, latitude: profile.latitude, longitude: profile.longitude, service_radius_km: profile.service_radius_km } : null });
   } catch (error) {
     console.error('proOpportunityFeed', error);

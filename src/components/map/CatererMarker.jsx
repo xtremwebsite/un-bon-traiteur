@@ -11,5 +11,5 @@ const catererIcon = divIcon({
 });
 
 export default function CatererMarker({ item }) {
-  return <Marker position={[item.latitude, item.longitude]} icon={catererIcon}><Popup className="caterer-bento-popup" minWidth={0} maxWidth={430} autoPanPadding={[24, 24]}><CatererMapCard item={item}/></Popup></Marker>;
+  return <Marker position={[item.latitude, item.longitude]} icon={catererIcon}><Popup className="caterer-bento-popup" minWidth={0} maxWidth={300} autoPanPadding={[12, 12]}><CatererMapCard item={item}/></Popup></Marker>;
 }
