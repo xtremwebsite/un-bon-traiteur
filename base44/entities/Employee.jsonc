@@ -1,0 +1,147 @@
+{
+  "name": "Employee",
+  "type": "object",
+  "properties": {
+    "caterer_id": {
+      "type": "string"
+    },
+    "caterer_user_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "birth_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "job_role": {
+      "type": "string",
+      "enum": [
+        "responsable",
+        "chef_cuisine",
+        "cuisinier",
+        "commis",
+        "maitre_hotel",
+        "serveur",
+        "barman",
+        "plongeur",
+        "logistique",
+        "livreur",
+        "administratif",
+        "autre"
+      ]
+    },
+    "custom_role": {
+      "type": "string"
+    },
+    "experience_years": {
+      "type": "number",
+      "minimum": 0
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "weekly_days": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "monday",
+          "tuesday",
+          "wednesday",
+          "thursday",
+          "friday",
+          "saturday",
+          "sunday"
+        ]
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "invited",
+        "active",
+        "on_leave",
+        "inactive"
+      ],
+      "default": "invited"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caterer_id",
+    "caterer_user_id",
+    "first_name",
+    "last_name",
+    "email",
+    "job_role"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.caterer_user_id": "{{user.id}}"
+        },
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "data.email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "data.caterer_user_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "data.caterer_user_id": "{{user.id}}"
+        },
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.caterer_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -58,12 +58,14 @@ export default async function(req: Request): Promise<Response> {
         let payload={status:body.status};
         if(body.status==='confirmed'){payload={...payload,accepted_at:new Date().toISOString()};if(booking.initiated_by!=='extra'){const extras=await base44.asServiceRole.entities.ExtraProfile.filter({created_by_id:user.id},'-created_date',1);const extra=extras[0];payload={...payload,extra_name:[extra?.first_name,extra?.last_name].filter(Boolean).join(' '),extra_phone:extra?.phone||'',extra_email:extra?.email||user.email,extra_city:extra?.city||'',extra_skills:extra?.skills||[],extra_experience:extra?.experience_details||''};}}
         const item=await base44.asServiceRole.entities.ExtraBooking.update(booking.id,payload);
+        const staffAssignments=await base44.asServiceRole.entities.StaffAssignment.filter({booking_id:booking.id},'-created_date',20);if(staffAssignments.length)await base44.asServiceRole.entities.StaffAssignment.bulkUpdate(staffAssignments.map(assignment=>({id:assignment.id,status:body.status==='confirmed'?'accepted':'declined',responded_at:new Date().toISOString()})));
         if(booking.extra_request_id&&body.status==='confirmed'){const request=await base44.asServiceRole.entities.ExtraRequest.get(booking.extra_request_id);const confirmed=await base44.asServiceRole.entities.ExtraBooking.filter({extra_request_id:booking.extra_request_id,status:'confirmed'},'-created_date',500);if(request&&confirmed.length>=Number(request.required_count||1))await base44.asServiceRole.entities.ExtraRequest.update(request.id,{status:'filled'});}
         return Response.json({item});
       }
       if(body.action==='cancel_booking'){
         if(!['pending','confirmed'].includes(booking.status))return Response.json({error:'Cette demande ne peut plus être annulée'},{status:400});
         const item=await base44.asServiceRole.entities.ExtraBooking.update(booking.id,{status:'cancelled',cancelled_at:new Date().toISOString(),cancelled_by:isExtra?'extra':'caterer'});
+        const staffAssignments=await base44.asServiceRole.entities.StaffAssignment.filter({booking_id:booking.id},'-created_date',20);if(staffAssignments.length)await base44.asServiceRole.entities.StaffAssignment.bulkUpdate(staffAssignments.map(assignment=>({id:assignment.id,status:'cancelled',responded_at:new Date().toISOString()})));
         if(booking.extra_request_id)await base44.asServiceRole.entities.ExtraRequest.update(booking.extra_request_id,{status:'open'}); return Response.json({item});
       }
       if(!['declined','cancelled','expired'].includes(booking.status))return Response.json({error:'Annulez d’abord la demande avant de la supprimer'},{status:400});

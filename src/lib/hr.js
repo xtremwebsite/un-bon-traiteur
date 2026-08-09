@@ -1,0 +1,4 @@
+export const jobOptions=[['responsable','Responsable'],['chef_cuisine','Chef de cuisine'],['cuisinier','Cuisinier'],['commis','Commis'],['maitre_hotel','Maître d’hôtel'],['serveur','Serveur'],['barman','Barman'],['plongeur','Plongeur'],['logistique','Logistique'],['livreur','Livreur'],['administratif','Administratif'],['autre','Autre']];
+export const jobLabel=value=>jobOptions.find(([key])=>key===value)?.[1]||value;
+export const weekOptions=[['monday','Lun'],['tuesday','Mar'],['wednesday','Mer'],['thursday','Jeu'],['friday','Ven'],['saturday','Sam'],['sunday','Dim']];
+export const employeeAge=date=>date?Math.floor((Date.now()-new Date(date).getTime())/31557600000):null;

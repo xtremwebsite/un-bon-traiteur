@@ -10,6 +10,19 @@
         "user"
       ]
     },
+    "account_type": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "caterer",
+        "employee",
+        "extra"
+      ],
+      "default": "standard"
+    },
+    "employer_user_id": {
+      "type": "string"
+    },
     "account_status": {
       "type": "string",
       "enum": [

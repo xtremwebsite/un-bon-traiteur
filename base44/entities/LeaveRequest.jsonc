@@ -1,0 +1,125 @@
+{
+  "name": "LeaveRequest",
+  "type": "object",
+  "properties": {
+    "employee_id": {
+      "type": "string"
+    },
+    "caterer_user_id": {
+      "type": "string"
+    },
+    "employee_user_id": {
+      "type": "string"
+    },
+    "employee_email": {
+      "type": "string"
+    },
+    "employee_name": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "leave_type": {
+      "type": "string",
+      "enum": [
+        "paid_leave",
+        "unpaid_leave",
+        "recovery",
+        "sick_leave",
+        "other"
+      ]
+    },
+    "reason": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "declined",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "manager_note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "employee_id",
+    "caterer_user_id",
+    "employee_email",
+    "employee_name",
+    "start_date",
+    "end_date",
+    "leave_type",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.caterer_user_id": "{{user.id}}"
+        },
+        {
+          "data.employee_user_id": "{{user.id}}"
+        },
+        {
+          "data.employee_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "$or": [
+        {
+          "data.caterer_user_id": "{{user.id}}"
+        },
+        {
+          "data.employee_user_id": "{{user.id}}"
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.caterer_user_id": "{{user.id}}"
+        },
+        {
+          "data.employee_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.caterer_user_id": "{{user.id}}"
+        },
+        {
+          "data.employee_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

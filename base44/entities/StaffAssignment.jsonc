@@ -1,0 +1,139 @@
+{
+  "name": "StaffAssignment",
+  "type": "object",
+  "properties": {
+    "quote_id": {
+      "type": "string"
+    },
+    "caterer_id": {
+      "type": "string"
+    },
+    "caterer_user_id": {
+      "type": "string"
+    },
+    "assignee_type": {
+      "type": "string",
+      "enum": [
+        "employee",
+        "extra"
+      ]
+    },
+    "employee_id": {
+      "type": "string"
+    },
+    "extra_profile_id": {
+      "type": "string"
+    },
+    "booking_id": {
+      "type": "string"
+    },
+    "assignee_user_id": {
+      "type": "string"
+    },
+    "assignee_email": {
+      "type": "string"
+    },
+    "assignee_name": {
+      "type": "string"
+    },
+    "job_role": {
+      "type": "string"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "start_time": {
+      "type": "string"
+    },
+    "end_time": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "event_label": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "proposed",
+        "pending",
+        "accepted",
+        "declined",
+        "cancelled"
+      ],
+      "default": "proposed"
+    },
+    "notified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "responded_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "quote_id",
+    "caterer_id",
+    "caterer_user_id",
+    "assignee_type",
+    "assignee_email",
+    "assignee_name",
+    "job_role",
+    "event_date",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.caterer_user_id": "{{user.id}}"
+        },
+        {
+          "data.assignee_user_id": "{{user.id}}"
+        },
+        {
+          "data.assignee_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "data.caterer_user_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "data.caterer_user_id": "{{user.id}}"
+        },
+        {
+          "data.assignee_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.caterer_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

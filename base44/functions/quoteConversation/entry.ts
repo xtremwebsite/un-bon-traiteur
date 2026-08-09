@@ -9,11 +9,12 @@ export default async function(req: Request): Promise<Response> {
     if (body.action === 'list_professional') {
       const profiles = await base44.asServiceRole.entities.CatererProfile.filter({ created_by_id: user.id }, '-created_date', 20);
       const profileIds = profiles.map(item => item.id);
-      const [items, bookings] = await Promise.all([
+      const [items, bookings, assignments] = await Promise.all([
         profileIds.length ? base44.asServiceRole.entities.QuoteRequest.filter({ caterer_id: { $in: profileIds } }, '-last_activity_at', 200) : [],
-        base44.asServiceRole.entities.ExtraBooking.filter({ $or: [{ caterer_user_id: user.id }, { caterer_id: { $in: profileIds } }] }, 'booking_date', 300)
+        base44.asServiceRole.entities.ExtraBooking.filter({ $or: [{ caterer_user_id: user.id }, { caterer_id: { $in: profileIds } }] }, 'booking_date', 300),
+        base44.asServiceRole.entities.StaffAssignment.filter({ caterer_user_id: user.id }, 'event_date', 500)
       ]);
-      return Response.json({ items, bookings });
+      return Response.json({ items, bookings, assignments });
     }
     const quote = await base44.asServiceRole.entities.QuoteRequest.get(String(body.quote_id || ''));
     if (!quote) return Response.json({ error: 'Devis introuvable' }, { status: 404 });

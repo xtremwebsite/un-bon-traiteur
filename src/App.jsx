@@ -35,6 +35,8 @@ import ExtraOpportunities from '@/pages/ExtraOpportunities';
 import ProQuotes from '@/pages/ProQuotes';
 import ProPlanning from '@/pages/ProPlanning';
 import ProProfile from '@/pages/ProProfile';
+import ProHR from '@/pages/ProHR';
+import EmployeePortal from '@/pages/EmployeePortal';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -78,6 +80,10 @@ const AuthenticatedApp = () => {
         <Route path="/devis-traiteur" element={<ProQuotes />} />
         <Route path="/planning-traiteur" element={<ProPlanning />} />
         <Route path="/profil-traiteur" element={<ProProfile />} />
+        <Route path="/rh-traiteur" element={<ProHR />} />
+      </Route>
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=/espace-employe" replace />} />}>
+        <Route path="/espace-employe" element={<EmployeePortal />} />
       </Route>
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=/mon-espace" replace />} />}>
         <Route path="/mon-espace" element={<AccountPortal />} />
