@@ -11,7 +11,9 @@
         "status",
         "message",
         "client_decision",
-        "professional_decision"
+        "professional_decision",
+        "internal_note",
+        "view"
       ]
     },
     "label": {

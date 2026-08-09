@@ -9,8 +9,11 @@ export default async function(req: Request): Promise<Response> {
     if (body.action === 'list_professional') {
       const profiles = await base44.asServiceRole.entities.CatererProfile.filter({ created_by_id: user.id }, '-created_date', 20);
       const profileIds = profiles.map(item => item.id);
-      const items = profileIds.length ? await base44.asServiceRole.entities.QuoteRequest.filter({ caterer_id: { $in: profileIds } }, '-created_date', 100) : [];
-      return Response.json({ items });
+      const [items, bookings] = await Promise.all([
+        profileIds.length ? base44.asServiceRole.entities.QuoteRequest.filter({ caterer_id: { $in: profileIds } }, '-last_activity_at', 200) : [],
+        base44.asServiceRole.entities.ExtraBooking.filter({ $or: [{ caterer_user_id: user.id }, { caterer_id: { $in: profileIds } }] }, 'booking_date', 300)
+      ]);
+      return Response.json({ items, bookings });
     }
     const quote = await base44.asServiceRole.entities.QuoteRequest.get(String(body.quote_id || ''));
     if (!quote) return Response.json({ error: 'Devis introuvable' }, { status: 404 });
@@ -20,11 +23,27 @@ export default async function(req: Request): Promise<Response> {
       if (profile?.created_by_id === user.id) actor = 'professional';
     }
     if (!actor) return Response.json({ error: 'Forbidden' }, { status: 403 });
+    if (body.action === 'history' && actor === 'professional') {
+      await base44.asServiceRole.entities.QuoteActivity.create({ quote_id: quote.id, type: 'view', label: 'Dossier ouvert par le traiteur', actor });
+    }
     if (body.action === 'message') {
       const message = String(body.message || '').trim().slice(0, 2000);
       if (!message) return Response.json({ error: 'Message vide' }, { status: 400 });
       await base44.asServiceRole.entities.QuoteActivity.create({ quote_id: quote.id, type: 'message', label: actor === 'professional' ? 'Réponse du traiteur' : actor === 'client' ? 'Message du client' : 'Message administrateur', details: message, actor });
       await base44.asServiceRole.entities.QuoteRequest.update(quote.id, { status: actor === 'professional' ? 'responses_received' : quote.status, last_activity_at: new Date().toISOString() });
+    }
+    if (body.action === 'note' && actor === 'professional') {
+      const note = String(body.message || '').trim().slice(0, 2000);
+      if (!note) return Response.json({ error: 'Note vide' }, { status: 400 });
+      await base44.asServiceRole.entities.QuoteActivity.create({ quote_id: quote.id, type: 'internal_note', label: 'Note interne', details: note, actor });
+      await base44.asServiceRole.entities.QuoteRequest.update(quote.id, { last_activity_at: new Date().toISOString() });
+    }
+    if (body.action === 'status' && actor === 'professional') {
+      const allowed = ['submitted', 'matched', 'responses_received', 'closed', 'cancelled'];
+      const status = String(body.status || '');
+      if (!allowed.includes(status)) return Response.json({ error: 'Statut invalide' }, { status: 400 });
+      await base44.asServiceRole.entities.QuoteRequest.update(quote.id, { status, last_activity_at: new Date().toISOString() });
+      await base44.asServiceRole.entities.QuoteActivity.create({ quote_id: quote.id, type: 'status', label: `Statut modifié : ${status}`, actor });
     }
     if (body.action === 'decision' && ['client', 'professional'].includes(actor)) {
       const decision = body.decision === 'accepted' ? 'accepted' : body.decision === 'declined' ? 'declined' : '';
@@ -34,7 +53,8 @@ export default async function(req: Request): Promise<Response> {
       await base44.asServiceRole.entities.QuoteRequest.update(quote.id, { [`${actor}_decision`]: decision, status, last_activity_at: new Date().toISOString() });
       await base44.asServiceRole.entities.QuoteActivity.create({ quote_id: quote.id, type: `${actor}_decision`, label: `${actor === 'client' ? 'Client' : 'Traiteur'} : ${decision === 'accepted' ? 'devis accepté' : 'devis refusé'}`, actor });
     }
-    const activities = await base44.asServiceRole.entities.QuoteActivity.filter({ quote_id: quote.id }, 'created_date', 200);
+    const allActivities = await base44.asServiceRole.entities.QuoteActivity.filter({ quote_id: quote.id }, '-created_date', 300);
+    const activities = actor === 'client' ? allActivities.filter(item => item.type !== 'internal_note') : allActivities;
     const updated = await base44.asServiceRole.entities.QuoteRequest.get(quote.id);
     return Response.json({ item: updated, activities, actor });
   } catch (error) {

@@ -1,0 +1,6 @@
+import QuoteKanbanCard from '@/components/pro/QuoteKanbanCard';
+
+const lanes=[['submitted','Nouveaux'],['matched','À traiter'],['responses_received','En discussion'],['closed','Acceptés'],['cancelled','Refusés']];
+export default function QuoteKanbanBoard({items,onOpen,onChanged}){
+  return <div className="overflow-x-auto pb-3"><div className="grid min-w-[1180px] grid-cols-5 gap-4">{lanes.map(([status,label])=>{const entries=items.filter(item=>item.status===status||(status==='submitted'&&item.status==='draft'));return <section key={status} className="rounded-2xl border bg-secondary/30 p-3"><header className="mb-3 flex items-center justify-between"><h3 className="font-bold">{label}</h3><span className="rounded-full bg-card px-2.5 py-1 text-xs font-bold">{entries.length}</span></header><div className="space-y-3">{entries.map(item=><QuoteKanbanCard key={item.id} item={item} onOpen={onOpen} onChanged={onChanged}/>)}{!entries.length&&<p className="rounded-xl border border-dashed bg-card/60 p-4 text-center text-xs text-muted-foreground">Aucun devis</p>}</div></section>})}</div></div>;
+}
