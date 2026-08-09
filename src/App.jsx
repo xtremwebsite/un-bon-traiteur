@@ -32,6 +32,9 @@ import ProExtras from '@/pages/ProExtras';
 import ExtraRegistration from '@/pages/ExtraRegistration';
 import ProExtraTracking from '@/pages/ProExtraTracking';
 import ExtraOpportunities from '@/pages/ExtraOpportunities';
+import ProQuotes from '@/pages/ProQuotes';
+import ProPlanning from '@/pages/ProPlanning';
+import ProProfile from '@/pages/ProProfile';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -72,6 +75,9 @@ const AuthenticatedApp = () => {
       </Route>
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=/tableau-de-bord-traiteur" replace />} />}>
         <Route path="/tableau-de-bord-traiteur" element={<ProDashboard />} />
+        <Route path="/devis-traiteur" element={<ProQuotes />} />
+        <Route path="/planning-traiteur" element={<ProPlanning />} />
+        <Route path="/profil-traiteur" element={<ProProfile />} />
       </Route>
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=/mon-espace" replace />} />}>
         <Route path="/mon-espace" element={<AccountPortal />} />

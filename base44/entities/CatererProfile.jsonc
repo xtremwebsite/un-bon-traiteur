@@ -162,6 +162,11 @@
     "years_experience": {
       "type": "number"
     },
+    "internal_staff_count": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0
+    },
     "logo_url": {
       "type": "string"
     },
