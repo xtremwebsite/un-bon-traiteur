@@ -1,0 +1,14 @@
+import {AlertTriangle,CalendarDays,MapPin,Users} from 'lucide-react';
+import {Link} from 'react-router-dom';
+
+export default function ResourceDayCard({day,onOpen}){
+  const event=day.events[0]||{};const params=new URLSearchParams({role:'Serveur',date:day.date,location:event.location||'',count:String(day.shortage),description:`Renfort pour ${day.events.map(x=>x.event_type).filter(Boolean).join(', ')||'prestation traiteur'} — besoin estimatif calculé par le planning.`});
+  return <section className="rounded-2xl border bg-card p-4 shadow-sm">
+    <div className="grid gap-4 md:grid-cols-[170px_1fr_1fr]">
+      <div><p className="flex items-center gap-2 font-bold text-primary"><CalendarDays size={18}/>{new Date(`${day.date}T12:00:00`).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'})}</p>{day.events.length>1&&<p className="mt-2 flex items-center gap-1 text-xs font-bold text-destructive"><AlertTriangle size={14}/>Plusieurs prestations</p>}</div>
+      <div><h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Prestations</h3>{day.events.map(item=><button key={item.id} onClick={()=>onOpen(item)} className="mt-2 block w-full rounded-xl bg-secondary p-3 text-left text-sm"><b>{item.event_type} · {item.first_name} {item.last_name}</b><span className="mt-1 flex gap-1 text-xs text-muted-foreground"><MapPin size={13}/>{item.location} · {item.guest_count} pers.</span></button>)}</div>
+      <div><h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Personnel affecté</h3>{day.employees.map(item=><div key={item.id} className="mt-2 rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm"><b className="flex gap-2"><Users size={15}/>{item.assignee_name}</b><p className="mt-1 text-xs text-muted-foreground">Salarié · {item.job_role} · {item.status}</p></div>)}{day.bookings.map(item=><div key={item.id} className="mt-2 rounded-xl border p-3 text-sm"><b className="flex gap-2"><Users size={15}/>{item.extra_name||'Extra réservé'}</b><p className="mt-1 text-xs text-muted-foreground">Extra · {item.status}</p></div>)}{!day.employees.length&&!day.bookings.length&&<p className="mt-2 rounded-xl border border-dashed p-3 text-sm text-muted-foreground">Aucune affectation</p>}</div>
+    </div>
+    <div className={`mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl p-4 ${day.shortage?'bg-destructive/10':'bg-secondary'}`}><p className="text-sm"><b>{day.required} personnes estimées</b> · {day.internal} salarié(s) sur {day.capacity} · {day.extras} Extra(s)</p>{day.shortage>0?<Link to={`/extras-pro?${params.toString()}`} className="rounded-xl bg-destructive px-4 py-2 text-sm font-bold text-destructive-foreground">Recruter {day.shortage} Extra(s)</Link>:<span className="text-sm font-bold text-primary">Équipe suffisante</span>}</div>
+  </section>;
+}

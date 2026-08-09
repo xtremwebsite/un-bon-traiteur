@@ -18,11 +18,12 @@ export default async function(req: Request): Promise<Response> {
     }
     const quote = await base44.asServiceRole.entities.QuoteRequest.get(String(body.quote_id || ''));
     if (!quote) return Response.json({ error: 'Devis introuvable' }, { status: 404 });
-    let actor = user.role === 'admin' ? 'admin' : quote.created_by_id === user.id || quote.email === user.email ? 'client' : '';
+    let actor = user.role === 'admin' ? 'admin' : '';
     if (!actor && quote.caterer_id) {
       const profile = await base44.asServiceRole.entities.CatererProfile.get(quote.caterer_id);
       if (profile?.created_by_id === user.id) actor = 'professional';
     }
+    if (!actor && (quote.created_by_id === user.id || quote.email === user.email)) actor = 'client';
     if (!actor) return Response.json({ error: 'Forbidden' }, { status: 403 });
     if (body.action === 'history' && actor === 'professional') {
       await base44.asServiceRole.entities.QuoteActivity.create({ quote_id: quote.id, type: 'view', label: 'Dossier ouvert par le traiteur', actor });
