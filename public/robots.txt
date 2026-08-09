@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /mon-espace
+Disallow: /tableau-de-bord-traiteur
+Disallow: /devis-traiteur
+Disallow: /planning-traiteur
+Disallow: /profil-traiteur
+Disallow: /rh-traiteur
+Disallow: /espace-employe
+Disallow: /extras-pro
+Disallow: /suivi-extras
+Disallow: /inscription-extra
+Disallow: /annonces-extra
+Disallow: /opportunites-pro
+Disallow: /inscription-traiteur
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+
+Sitemap: https://unbontraiteur.com/sitemap.xml
+Sitemap: https://unbontraiteur.com/functions/serveSitemapXml

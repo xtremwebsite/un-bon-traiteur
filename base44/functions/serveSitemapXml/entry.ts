@@ -6,7 +6,7 @@ const escapeXml = (value) => String(value).replace(/&/g, '&amp;').replace(/</g, 
 export default async function(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const caterers = await base44.asServiceRole.entities.CatererProfile.filter({ published: true }, '-updated_date', 5000);
+    const caterers = await base44.asServiceRole.entities.CatererProfile.filter({ published: true, status: 'approved' }, '-updated_date', 5000);
     const publicPages = [
       ['/', '1.0', 'daily'],
       ['/recherche', '0.9', 'daily'],
