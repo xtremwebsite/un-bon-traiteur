@@ -36,20 +36,24 @@ export default async function(req: Request): Promise<Response> {
       const activity = await base44.asServiceRole.entities.QuoteActivity.create({ quote_id: quote.id, type: 'message', label: actor === 'professional' ? 'Réponse du traiteur' : actor === 'client' ? 'Message du client' : 'Message administrateur', details: message, actor });
       await base44.asServiceRole.entities.QuoteRequest.update(quote.id, { status: actor === 'professional' ? 'responses_received' : quote.status, last_activity_at: new Date().toISOString() });
       if (actor === 'professional') {
-        await base44.functions.invoke('sendN8nWebhook', {
-          entity_name: 'QuoteRequest',
-          entity_id: quote.id,
-          event_name: 'quote_response_sent',
-          delivery_key: activity.id,
-          context: {
-            recipient_email: quote.email || '',
-            recipient_name: [quote.first_name, quote.last_name].filter(Boolean).join(' '),
-            caterer_name: catererProfile?.business_name || 'Votre traiteur',
-            caterer_email: catererProfile?.email || catererProfile?.created_by || '',
-            message,
-            footer: 'Envoyé par unbontraiteur.com'
-          }
-        });
+        try {
+          await base44.functions.invoke('sendN8nWebhook', {
+            entity_name: 'QuoteRequest',
+            entity_id: quote.id,
+            event_name: 'quote_response_sent',
+            delivery_key: activity.id,
+            context: {
+              recipient_email: quote.email || '',
+              recipient_name: [quote.first_name, quote.last_name].filter(Boolean).join(' '),
+              caterer_name: catererProfile?.business_name || 'Votre traiteur',
+              caterer_email: catererProfile?.email || catererProfile?.created_by || '',
+              message,
+              footer: 'Envoyé par unbontraiteur.com'
+            }
+          });
+        } catch (notificationError) {
+          console.error('Notification n8n non envoyée', notificationError);
+        }
       }
     }
     if (body.action === 'note' && actor === 'professional') {
