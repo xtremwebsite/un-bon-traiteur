@@ -43,7 +43,12 @@ export default async function(req: Request): Promise<Response> {
         quotes_declined: items.filter(item => item.status === 'cancelled' && item.updated_date >= monthStart).length,
         extras_worked: workedExtraIds.size
       };
-      return Response.json({ items, bookings, assignments, stats });
+      const quoteById = new Map(items.map(item => [item.id, item]));
+      const recent_messages = activities.filter(item => item.type === 'message' && item.actor === 'client').sort((a, b) => String(b.created_date).localeCompare(String(a.created_date))).slice(0, 6).map(message => {
+        const item = quoteById.get(message.quote_id);
+        return { id: message.id, quote_id: message.quote_id, details: message.details, created_date: message.created_date, reference: item?.reference || '', client_name: [item?.first_name, item?.last_name].filter(Boolean).join(' ') || 'Client' };
+      });
+      return Response.json({ items, bookings, assignments, stats, recent_messages });
     }
     const quote = await base44.asServiceRole.entities.QuoteRequest.get(String(body.quote_id || ''));
     if (!quote) return Response.json({ error: 'Devis introuvable' }, { status: 404 });
