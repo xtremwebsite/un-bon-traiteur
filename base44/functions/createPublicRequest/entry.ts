@@ -13,7 +13,13 @@ export default async function(req) {
     if (String(data.email).length > 160 || String(data.message || '').length > 3000) return Response.json({ error: 'Données trop longues' }, { status: 400 });
     const reference = `${kind === 'urgent' ? 'URG' : 'DEV'}-${Date.now().toString(36).toUpperCase()}`;
     const coordinates = await geocodeLocation(data.location) || {};
-    const payload = { ...data, ...coordinates, radius_km: kind === 'quote' ? 50 : data.radius_km, reference };
+    let catererEmail = '';
+    if (kind === 'quote' && data.caterer_id) {
+      const caterer = await base44.asServiceRole.entities.CatererProfile.get(data.caterer_id);
+      catererEmail = caterer?.email || caterer?.created_by || '';
+    }
+    const requestSource = kind === 'urgent' ? 'urgent_replacement' : data.caterer_id ? 'direct_caterer' : 'matching_service';
+    const payload = { ...data, ...coordinates, radius_km: kind === 'quote' ? 50 : data.radius_km, reference, request_source: requestSource, ...(catererEmail ? { caterer_email: catererEmail } : {}) };
     let user = null;
     try { user = await base44.auth.me(); } catch { user = null; }
     const entities = user ? base44.entities : base44.asServiceRole.entities;

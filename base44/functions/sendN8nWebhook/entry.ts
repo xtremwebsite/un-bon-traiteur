@@ -34,7 +34,10 @@ export default async function(req: Request): Promise<Response> {
     }
     const record = await base44.asServiceRole.entities[entity_name].get(entity_id);
     if (!record) throw new Error('Source record not found');
-    const payload = { event: event_name, idempotency_key: idempotencyKey, occurred_at: new Date().toISOString(), entity: entity_name, data: record };
+    const identification = entity_name === 'CatererProfile'
+      ? { caterer_id: record.id, caterer_email: record.email || record.created_by || '', business_name: record.business_name || '' }
+      : { reference: record.reference || '', request_source: record.request_source || '', caterer_id: record.caterer_id || '', caterer_email: record.caterer_email || '' };
+    const payload = { event: event_name, idempotency_key: idempotencyKey, occurred_at: new Date().toISOString(), entity: entity_name, identification, data: record };
     const body = JSON.stringify(payload);
     const signature = await sign(body, secrets.get('N8N_WEBHOOK_SECRET'));
     const response = await fetch(targets[mode], { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Webhook-Signature': `sha256=${signature}`, 'X-Idempotency-Key': idempotencyKey, 'X-Webhook-Event': event_name }, body });

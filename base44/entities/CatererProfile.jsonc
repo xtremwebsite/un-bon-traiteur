@@ -45,6 +45,9 @@
     "contact_name": {
       "type": "string"
     },
+    "email": {
+      "type": "string"
+    },
     "siret": {
       "type": "string"
     },

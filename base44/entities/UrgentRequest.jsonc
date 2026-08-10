@@ -5,6 +5,12 @@
     "reference": {
       "type": "string"
     },
+    "request_source": {
+      "type": "string",
+      "enum": [
+        "urgent_replacement"
+      ]
+    },
     "status": {
       "type": "string",
       "enum": [
@@ -88,6 +94,7 @@
   },
   "required": [
     "reference",
+    "request_source",
     "event_date",
     "location",
     "event_type",
