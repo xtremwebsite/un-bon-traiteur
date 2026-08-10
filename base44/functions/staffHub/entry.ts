@@ -16,6 +16,16 @@ export default async function(req: Request): Promise<Response> {
       try { await base44.asServiceRole.integrations.Core.SendEmail({ to, subject, body: bodyText, from_name: profile?.business_name || 'Un Bon Traiteur' }); return true; }
       catch (error) { console.error('staffHub email', to, error.message); return false; }
     };
+    const sendAssignmentNotice = async (quote, assignment, personType) => {
+      if (!assignment.assignee_email) return false;
+      try {
+        await base44.functions.invoke('sendN8nWebhook', {
+          entity_name: 'QuoteRequest', entity_id: quote.id, event_name: 'staff_assignment_notified', delivery_key: assignment.id,
+          context: { recipient_email: assignment.assignee_email, recipient_name: assignment.assignee_name, person_type: personType, caterer_name: profile?.business_name || '', job_role: assignment.job_role, event_date: assignment.event_date, event_time: assignment.start_time || '', location: assignment.location || '', event_label: assignment.event_label || '', assignment_status: assignment.status }
+        });
+        return true;
+      } catch (error) { console.error('staffHub n8n notification', assignment.assignee_email, error.message); return false; }
+    };
     const loadQuote = async quoteId => {
       const quote = await base44.asServiceRole.entities.QuoteRequest.get(String(quoteId || ''));
       if (!quote) throw new Error('Devis introuvable');
@@ -100,8 +110,8 @@ export default async function(req: Request): Promise<Response> {
           if (existing.some(item => item.employee_id === selection.id)) continue;
           const employee = await base44.asServiceRole.entities.Employee.get(selection.id);
           if (!employee || employee.caterer_user_id !== user.id) continue;
-          const assignment = await base44.entities.StaffAssignment.create({ quote_id: quote.id, caterer_id: profile.id, caterer_user_id: user.id, assignee_type: 'employee', employee_id: employee.id, assignee_user_id: employee.user_id || '', assignee_email: employee.email, assignee_name: `${employee.first_name} ${employee.last_name}`, job_role: selection.role || employee.job_role, event_date: quote.event_date, start_time: quote.event_time || '', location: quote.location, event_label: `${quote.event_type} · ${quote.reference}`, status: 'pending', notified_at: new Date().toISOString() });
-          if (await sendNotice(employee.email, `Nouvelle affectation le ${quote.event_date}`, `${profile.business_name} vous propose une mission ${roleLabels[assignment.job_role] || assignment.job_role} pour ${quote.event_type} à ${quote.location}. Connectez-vous à votre espace employé pour accepter ou refuser.`)) notified++;
+          let assignment = await base44.entities.StaffAssignment.create({ quote_id: quote.id, caterer_id: profile.id, caterer_user_id: user.id, assignee_type: 'employee', employee_id: employee.id, assignee_user_id: employee.user_id || '', assignee_email: employee.email, assignee_name: `${employee.first_name} ${employee.last_name}`, job_role: selection.role || employee.job_role, event_date: quote.event_date, start_time: quote.event_time || '', location: quote.location, event_label: `${quote.event_type} · ${quote.reference}`, status: 'pending' });
+          if (await sendAssignmentNotice(quote, assignment, 'employee')) { assignment = await base44.asServiceRole.entities.StaffAssignment.update(assignment.id, { notified_at: new Date().toISOString() }); notified++; }
           created.push(assignment);
         }
         if (selection.type === 'extra') {
@@ -109,8 +119,8 @@ export default async function(req: Request): Promise<Response> {
           const extra = await base44.asServiceRole.entities.ExtraProfile.get(selection.id);
           if (!extra || extra.status !== 'approved') continue;
           const booking = await base44.asServiceRole.entities.ExtraBooking.create({ extra_profile_id: extra.id, extra_user_id: extra.created_by_id, initiated_by: 'caterer', extra_name: `${extra.first_name} ${extra.last_name}`, extra_phone: extra.phone, extra_email: extra.email, extra_city: extra.city, extra_skills: extra.skills || [], extra_experience: `${extra.experience_years || 0} an(s)`, caterer_id: profile.id, caterer_user_id: user.id, caterer_name: profile.business_name, caterer_slug: profile.slug, caterer_contact_name: profile.contact_name, caterer_phone: profile.phone, caterer_email: user.email, caterer_address: profile.address, caterer_city: profile.city, booking_date: quote.event_date, period: 'day', location: quote.location, service_details: `${roleLabels[selection.role] || selection.role} · ${quote.event_type} · ${quote.reference}`, status: 'pending' });
-          const assignment = await base44.entities.StaffAssignment.create({ quote_id: quote.id, caterer_id: profile.id, caterer_user_id: user.id, assignee_type: 'extra', extra_profile_id: extra.id, booking_id: booking.id, assignee_user_id: extra.created_by_id, assignee_email: extra.email, assignee_name: `${extra.first_name} ${extra.last_name}`, job_role: selection.role, event_date: quote.event_date, start_time: quote.event_time || '', location: quote.location, event_label: `${quote.event_type} · ${quote.reference}`, status: 'pending', notified_at: new Date().toISOString() });
-          if (await sendNotice(extra.email, `Nouvelle mission Extra le ${quote.event_date}`, `${profile.business_name} vous propose une mission ${roleLabels[selection.role] || selection.role} pour ${quote.event_type} à ${quote.location}. Connectez-vous à votre espace Extra pour répondre.`)) notified++;
+          let assignment = await base44.entities.StaffAssignment.create({ quote_id: quote.id, caterer_id: profile.id, caterer_user_id: user.id, assignee_type: 'extra', extra_profile_id: extra.id, booking_id: booking.id, assignee_user_id: extra.created_by_id, assignee_email: extra.email, assignee_name: `${extra.first_name} ${extra.last_name}`, job_role: selection.role, event_date: quote.event_date, start_time: quote.event_time || '', location: quote.location, event_label: `${quote.event_type} · ${quote.reference}`, status: 'pending' });
+          if (await sendAssignmentNotice(quote, assignment, 'extra')) { assignment = await base44.asServiceRole.entities.StaffAssignment.update(assignment.id, { notified_at: new Date().toISOString() }); notified++; }
           created.push(assignment);
         }
       }
