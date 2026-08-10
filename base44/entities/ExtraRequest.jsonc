@@ -27,6 +27,12 @@
     "longitude": {
       "type": "number"
     },
+    "radius_km": {
+      "type": "number",
+      "default": 15,
+      "minimum": 1,
+      "maximum": 100
+    },
     "required_count": {
       "type": "number"
     },

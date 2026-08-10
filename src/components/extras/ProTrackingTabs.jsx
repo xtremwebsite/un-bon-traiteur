@@ -1,0 +1,2 @@
+const tabs=[['tracking','Suivi'],['history','Historique'],['regular','Mes Extras réguliers']];
+export default function ProTrackingTabs({value,onChange}){return <div className="mt-6 grid grid-cols-3 gap-2 rounded-2xl border bg-card p-2">{tabs.map(([key,label])=><button key={key} type="button" onClick={()=>onChange(key)} className={`rounded-xl px-3 py-2.5 text-sm font-bold ${value===key?'bg-primary text-primary-foreground':'text-muted-foreground'}`}>{label}</button>)}</div>;}

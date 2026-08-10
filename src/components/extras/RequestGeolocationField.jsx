@@ -1,0 +1,9 @@
+import {useState} from 'react';
+import {LocateFixed} from 'lucide-react';
+import ExtraLocationField from '@/components/extras/ExtraLocationField';
+
+export default function RequestGeolocationField({data,onChange,onSelect}){
+  const[busy,setBusy]=useState(false);const[error,setError]=useState('');
+  const locate=()=>{setBusy(true);setError('');navigator.geolocation.getCurrentPosition(async position=>{const latitude=position.coords.latitude;const longitude=position.coords.longitude;const response=await fetch(`https://data.geopf.fr/geocodage/reverse?lon=${longitude}&lat=${latitude}&limit=1`);const result=await response.json();const feature=result.features?.[0];onSelect({location:feature?.properties?.label||'Ma position actuelle',latitude,longitude});setBusy(false)},()=>{setError('Position indisponible. Autorisez la géolocalisation dans votre navigateur.');setBusy(false)},{enableHighAccuracy:true,timeout:10000})};
+  return <div className="space-y-3"><ExtraLocationField value={data.location} onChange={onChange} onSelect={onSelect}/><button type="button" onClick={locate} disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-bold text-primary"><LocateFixed size={17}/>{busy?'Localisation…':'Utiliser ma position'}</button>{error&&<p className="text-xs text-destructive">{error}</p>}<label className="block">Rayon de diffusion<input min="1" max="100" type="number" value={data.radius_km} onChange={e=>onSelect({radius_km:Number(e.target.value)})} className="mt-1 h-11 w-full rounded-xl border bg-background px-3"/><span className="mt-1 block text-xs text-muted-foreground">15 km par défaut</span></label></div>;
+}
