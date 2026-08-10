@@ -37,6 +37,8 @@ import ProPlanning from '@/pages/ProPlanning';
 import ProProfile from '@/pages/ProProfile';
 import ProHR from '@/pages/ProHR';
 import EmployeePortal from '@/pages/EmployeePortal';
+import ClientQuotes from '@/pages/ClientQuotes';
+import AccountTypeRoute from '@/components/AccountTypeRoute';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -76,28 +78,39 @@ const AuthenticatedApp = () => {
         <Route path="/inscription-traiteur" element={<ProRegistration />} />
       </Route>
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=/tableau-de-bord-traiteur" replace />} />}>
-        <Route path="/tableau-de-bord-traiteur" element={<ProDashboard />} />
-        <Route path="/devis-traiteur" element={<ProQuotes />} />
-        <Route path="/planning-traiteur" element={<ProPlanning />} />
-        <Route path="/profil-traiteur" element={<ProProfile />} />
-        <Route path="/rh-traiteur" element={<ProHR />} />
+        <Route element={<AccountTypeRoute type="caterer" />}>
+          <Route path="/tableau-de-bord-traiteur" element={<ProDashboard />} />
+          <Route path="/devis-traiteur" element={<ProQuotes />} />
+          <Route path="/planning-traiteur" element={<ProPlanning />} />
+          <Route path="/profil-traiteur" element={<ProProfile />} />
+          <Route path="/rh-traiteur" element={<ProHR />} />
+        </Route>
       </Route>
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=/espace-employe" replace />} />}>
-        <Route path="/espace-employe" element={<EmployeePortal />} />
+        <Route element={<AccountTypeRoute type="employee" />}>
+          <Route path="/espace-employe" element={<EmployeePortal />} />
+        </Route>
       </Route>
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=/mon-espace" replace />} />}>
         <Route path="/mon-espace" element={<AccountPortal />} />
+        <Route path="/mes-devis" element={<ClientQuotes />} />
       </Route>
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=/opportunites-pro" replace />} />}>
-        <Route path="/opportunites-pro" element={<ProOpportunities />} />
+        <Route element={<AccountTypeRoute type="caterer" />}>
+          <Route path="/opportunites-pro" element={<ProOpportunities />} />
+        </Route>
       </Route>
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=/extras-pro" replace />} />}>
-        <Route path="/extras-pro" element={<ProExtras />} />
-        <Route path="/suivi-extras" element={<ProExtraTracking />} />
+        <Route element={<AccountTypeRoute type="caterer" />}>
+          <Route path="/extras-pro" element={<ProExtras />} />
+          <Route path="/suivi-extras" element={<ProExtraTracking />} />
+        </Route>
       </Route>
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=/inscription-extra" replace />} />}>
         <Route path="/inscription-extra" element={<ExtraRegistration />} />
-        <Route path="/annonces-extra" element={<ExtraOpportunities />} />
+        <Route element={<AccountTypeRoute type="extra" />}>
+          <Route path="/annonces-extra" element={<ExtraOpportunities />} />
+        </Route>
       </Route>
       <Route path="/" element={<Home />} />
       <Route path="/recherche" element={<Search />} />

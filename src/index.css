@@ -89,6 +89,10 @@
   body {
     @apply bg-background text-foreground font-body;
   }
+
+  input, textarea, select {
+    @apply bg-background text-foreground placeholder:text-muted-foreground;
+  }
 }
 
 .urgent-marker-shell { background: transparent; border: 0; }
