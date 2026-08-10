@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { geocodeLocation } from '../../shared/geolocation.ts';
 
-export default async function(req) {
+export default async function(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
     let user = null;
@@ -17,7 +17,7 @@ export default async function(req) {
       const point = Number.isFinite(item.latitude) && Number.isFinite(item.longitude) ? { latitude: item.latitude, longitude: item.longitude } : resolved.get(item.location);
       if (!point) return null;
       const summary = { id: item.id, reference: item.reference, event_type: item.event_type, event_date: item.event_date, guest_count: item.guest_count, location: item.location, budget: item.budget, ...point };
-      return subscribed ? { ...summary, message: item.message, service_need: item.service_need, first_name: item.first_name, last_name: item.last_name, email: item.email, phone: item.phone } : summary;
+      return subscribed ? { ...summary, message: item.message, service_need: item.service_need } : summary;
     };
     return Response.json({ items: activeUrgent.map(mapItem).filter(Boolean), quotes: activeQuotes.map(mapItem).filter(Boolean), subscribed });
   } catch (error) {
