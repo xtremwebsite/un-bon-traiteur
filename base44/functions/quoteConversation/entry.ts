@@ -72,10 +72,14 @@ export default async function(req: Request): Promise<Response> {
     if (body.action === 'decision' && ['client', 'professional'].includes(actor)) {
       const decision = body.decision === 'accepted' ? 'accepted' : body.decision === 'declined' ? 'declined' : '';
       if (!decision) return Response.json({ error: 'Décision invalide' }, { status: 400 });
-      const decisions = { client: quote.client_decision || 'pending', professional: quote.professional_decision || 'pending', [actor]: decision };
-      const status = decisions.client === 'declined' || decisions.professional === 'declined' ? 'cancelled' : decisions.client === 'accepted' && decisions.professional === 'accepted' ? 'closed' : decisions.professional === 'accepted' ? 'responses_received' : 'matched';
+      const status = decision === 'accepted' ? 'closed' : 'cancelled';
       await base44.asServiceRole.entities.QuoteRequest.update(quote.id, { [`${actor}_decision`]: decision, status, last_activity_at: new Date().toISOString() });
       await base44.asServiceRole.entities.QuoteActivity.create({ quote_id: quote.id, type: `${actor}_decision`, label: `${actor === 'client' ? 'Client' : 'Traiteur'} : ${decision === 'accepted' ? 'devis accepté' : 'devis refusé'}`, actor });
+    }
+    if (body.action === 'delete' && actor === 'professional') {
+      await base44.asServiceRole.entities.QuoteActivity.deleteMany({ quote_id: quote.id });
+      await base44.asServiceRole.entities.QuoteRequest.delete(quote.id);
+      return Response.json({ deleted: true, id: quote.id });
     }
     const allActivities = await base44.asServiceRole.entities.QuoteActivity.filter({ quote_id: quote.id }, '-created_date', 300);
     const activities = actor === 'client' ? allActivities.filter(item => item.type !== 'internal_note') : allActivities;

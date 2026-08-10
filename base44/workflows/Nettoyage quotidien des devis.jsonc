@@ -3,7 +3,7 @@
     "document": {
       "dsl": "1.0.0",
       "name": "nettoyage_quotidien_devis",
-      "version": "1.1",
+      "version": "1.2",
       "namespace": "base44"
     },
     "do": [
@@ -16,8 +16,8 @@
           },
           "then": "end",
           "x-base44": {
-            "title": "Supprimer les devis expir\u00e9s",
-            "description": "Plus de 15 jours"
+            "title": "Supprimer les devis refus\u00e9s",
+            "description": "Refus\u00e9s depuis plus de 3 jours"
           }
         }
       }
@@ -40,6 +40,6 @@
       "ends_after_count": null
     }
   },
-  "description": "Supprime chaque nuit les demandes de devis \u00e2g\u00e9es de plus de 15 jours.",
+  "description": "Supprime chaque nuit les demandes de devis refus\u00e9es depuis plus de 3 jours.",
   "name": "Nettoyage quotidien des devis"
 }
