@@ -17,11 +17,11 @@ export default async function(req: Request): Promise<Response> {
   const base44 = createClientFromRequest(req);
   let logId = '';
   try {
-    const { entity_name, entity_id, event_name, mode: requestedMode } = await req.json();
+    const { entity_name, entity_id, event_name, mode: requestedMode, delivery_key, context } = await req.json();
     const configs = requestedMode ? [] : await base44.asServiceRole.entities.WebhookConfig.list('-updated_date', 1);
     const mode = requestedMode || configs[0]?.mode || 'production';
     if (!allowedEntities.includes(entity_name) || !entity_id || !event_name || !targets[mode]) return Response.json({ error: 'Invalid webhook payload' }, { status: 400 });
-    const idempotencyKey = `${event_name}:${entity_id}:${mode}`;
+    const idempotencyKey = `${event_name}:${entity_id}:${delivery_key || 'default'}:${mode}`;
     const existing = await base44.asServiceRole.entities.WebhookDelivery.filter({ idempotency_key: idempotencyKey }, '-created_date', 1);
     if (existing[0]?.status === 'delivered' || existing[0]?.status === 'pending') return Response.json({ ok: true, duplicate: true, status: existing[0].status });
     const attempt = (existing[0]?.attempts || 0) + 1;
@@ -37,7 +37,7 @@ export default async function(req: Request): Promise<Response> {
     const identification = entity_name === 'CatererProfile'
       ? { caterer_id: record.id, caterer_email: record.email || record.created_by || '', business_name: record.business_name || '' }
       : { reference: record.reference || '', request_source: record.request_source || '', caterer_id: record.caterer_id || '', caterer_email: record.caterer_email || '' };
-    const payload = { event: event_name, idempotency_key: idempotencyKey, occurred_at: new Date().toISOString(), entity: entity_name, identification, data: record };
+    const payload = { event: event_name, idempotency_key: idempotencyKey, occurred_at: new Date().toISOString(), entity: entity_name, identification, data: record, context: context || null };
     const body = JSON.stringify(payload);
     const signature = await sign(body, secrets.get('N8N_WEBHOOK_SECRET'));
     const response = await fetch(targets[mode], { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Webhook-Signature': `sha256=${signature}`, 'X-Idempotency-Key': idempotencyKey, 'X-Webhook-Event': event_name }, body });

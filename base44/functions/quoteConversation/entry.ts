@@ -19,9 +19,10 @@ export default async function(req: Request): Promise<Response> {
     const quote = await base44.asServiceRole.entities.QuoteRequest.get(String(body.quote_id || ''));
     if (!quote) return Response.json({ error: 'Devis introuvable' }, { status: 404 });
     let actor = '';
+    let catererProfile = null;
     if (quote.caterer_id) {
-      const profile = await base44.asServiceRole.entities.CatererProfile.get(quote.caterer_id);
-      if (profile?.created_by_id === user.id) actor = 'professional';
+      catererProfile = await base44.asServiceRole.entities.CatererProfile.get(quote.caterer_id);
+      if (catererProfile?.created_by_id === user.id) actor = 'professional';
     }
     if (!actor && user.role === 'admin') actor = 'admin';
     if (!actor && (quote.created_by_id === user.id || quote.email === user.email)) actor = 'client';
@@ -32,8 +33,24 @@ export default async function(req: Request): Promise<Response> {
     if (body.action === 'message') {
       const message = String(body.message || '').trim().slice(0, 2000);
       if (!message) return Response.json({ error: 'Message vide' }, { status: 400 });
-      await base44.asServiceRole.entities.QuoteActivity.create({ quote_id: quote.id, type: 'message', label: actor === 'professional' ? 'Réponse du traiteur' : actor === 'client' ? 'Message du client' : 'Message administrateur', details: message, actor });
+      const activity = await base44.asServiceRole.entities.QuoteActivity.create({ quote_id: quote.id, type: 'message', label: actor === 'professional' ? 'Réponse du traiteur' : actor === 'client' ? 'Message du client' : 'Message administrateur', details: message, actor });
       await base44.asServiceRole.entities.QuoteRequest.update(quote.id, { status: actor === 'professional' ? 'responses_received' : quote.status, last_activity_at: new Date().toISOString() });
+      if (actor === 'professional') {
+        await base44.functions.invoke('sendN8nWebhook', {
+          entity_name: 'QuoteRequest',
+          entity_id: quote.id,
+          event_name: 'quote_response_sent',
+          delivery_key: activity.id,
+          context: {
+            recipient_email: quote.email || '',
+            recipient_name: [quote.first_name, quote.last_name].filter(Boolean).join(' '),
+            caterer_name: catererProfile?.business_name || 'Votre traiteur',
+            caterer_email: catererProfile?.email || catererProfile?.created_by || '',
+            message,
+            footer: 'Envoyé par unbontraiteur.com'
+          }
+        });
+      }
     }
     if (body.action === 'note' && actor === 'professional') {
       const note = String(body.message || '').trim().slice(0, 2000);
