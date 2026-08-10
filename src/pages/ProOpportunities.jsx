@@ -7,7 +7,7 @@ import OpportunityMap from '@/components/pro/OpportunityMap';
 
 const distance=(a,b,c,d)=>{const r=6371,p=Math.PI/180,x=(c-a)*p,y=(d-b)*p;const h=Math.sin(x/2)**2+Math.cos(a*p)*Math.cos(c*p)*Math.sin(y/2)**2;return 2*r*Math.asin(Math.sqrt(h))};
 export default function ProOpportunities(){
-  const[data,setData]=useState({items:[],subscribed:false,profile:null});const[loading,setLoading]=useState(true);const[filters,setFilters]=useState({search:'',kind:'all',eventType:'all',radius:1000});const[selectedKey,setSelectedKey]=useState('');
+  const[data,setData]=useState({items:[],subscribed:false,profile:null});const[loading,setLoading]=useState(true);const[filters,setFilters]=useState({search:'',kind:'all',eventType:'all',radius:1000});const[selectedKey,setSelectedKey]=useState(()=>new URLSearchParams(window.location.search).get('opportunity')||'');
   useEffect(()=>{base44.functions.invoke('proOpportunityFeed',{}).then(response=>setData(response.data)).finally(()=>setLoading(false))},[]);
   const origin=Number.isFinite(Number(data.profile?.latitude))&&Number.isFinite(Number(data.profile?.longitude))?[Number(data.profile.latitude),Number(data.profile.longitude)]:[46.6,2.2];
   const items=useMemo(()=>data.items.map(item=>({...item,distance:distance(origin[0],origin[1],Number(item.latitude),Number(item.longitude))})).filter(item=>(filters.kind==='all'||item.kind===filters.kind)&&(filters.eventType==='all'||item.event_type===filters.eventType)&&item.distance<=filters.radius&&`${item.location} ${item.event_type}`.toLowerCase().includes(filters.search.toLowerCase())),[data.items,filters,origin[0],origin[1]]);
