@@ -9,12 +9,34 @@ export default async function(req: Request): Promise<Response> {
     if (body.action === 'list_professional') {
       const profiles = await base44.asServiceRole.entities.CatererProfile.filter({ created_by_id: user.id }, '-created_date', 20);
       const profileIds = profiles.map(item => item.id);
-      const [items, bookings, assignments] = await Promise.all([
+      const profilePaths = profiles.filter(item => item.slug).map(item => `/traiteurs/${item.slug}`);
+      const [items, bookings, assignments, visits] = await Promise.all([
         profileIds.length ? base44.asServiceRole.entities.QuoteRequest.filter({ caterer_id: { $in: profileIds } }, '-last_activity_at', 200) : [],
         base44.asServiceRole.entities.ExtraBooking.filter({ $or: [{ caterer_user_id: user.id }, { caterer_id: { $in: profileIds } }] }, 'booking_date', 300),
-        base44.asServiceRole.entities.StaffAssignment.filter({ caterer_user_id: user.id }, 'event_date', 500)
+        base44.asServiceRole.entities.StaffAssignment.filter({ caterer_user_id: user.id }, 'event_date', 500),
+        profilePaths.length ? base44.asServiceRole.entities.PageVisit.filter({ page_path: { $in: profilePaths } }, '-last_seen', 2000) : []
       ]);
-      return Response.json({ items, bookings, assignments });
+      const quoteIds = items.map(item => item.id);
+      const activities = quoteIds.length ? await base44.asServiceRole.entities.QuoteActivity.filter({ quote_id: { $in: quoteIds } }, '-created_date', 2000) : [];
+      const now = new Date();
+      const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
+      const monthDay = monthStart.slice(0, 10);
+      const today = now.toISOString().slice(0, 10);
+      const respondedIds = new Set(activities.filter(item => item.actor === 'professional' && item.type === 'message' && item.created_date >= monthStart).map(item => item.quote_id));
+      const workedExtraIds = new Set([
+        ...bookings.filter(item => item.status === 'confirmed' && item.booking_date <= today).map(item => item.extra_profile_id),
+        ...assignments.filter(item => item.assignee_type === 'extra' && item.status === 'accepted' && item.event_date <= today).map(item => item.extra_profile_id)
+      ].filter(Boolean));
+      const stats = {
+        visits_total: visits.length,
+        visits_month: visits.filter(item => item.visit_day >= monthDay).length,
+        quotes_received: items.filter(item => item.created_date >= monthStart).length,
+        quotes_responded: respondedIds.size,
+        quotes_accepted: items.filter(item => item.status === 'closed' && item.updated_date >= monthStart).length,
+        quotes_declined: items.filter(item => item.status === 'cancelled' && item.updated_date >= monthStart).length,
+        extras_worked: workedExtraIds.size
+      };
+      return Response.json({ items, bookings, assignments, stats });
     }
     const quote = await base44.asServiceRole.entities.QuoteRequest.get(String(body.quote_id || ''));
     if (!quote) return Response.json({ error: 'Devis introuvable' }, { status: 404 });
