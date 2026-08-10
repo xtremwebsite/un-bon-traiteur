@@ -10,8 +10,8 @@ export default async function(req: Request): Promise<Response> {
       const items = await base44.asServiceRole.entities.QuoteRequest.filter({ $or: [{ created_by_id: user.id }, { email: user.email }] }, '-last_activity_at', 200);
       const profileIds = [...new Set(items.map(item => item.caterer_id).filter(Boolean))];
       const profiles = profileIds.length ? await base44.asServiceRole.entities.CatererProfile.filter({ id: { $in: profileIds } }, '-created_date', 200) : [];
-      const names = new Map(profiles.map(profile => [profile.id, profile.business_name]));
-      return Response.json({ items: items.map(item => ({ ...item, caterer_business_name: names.get(item.caterer_id) || 'Traiteur en cours d’attribution' })) });
+      const profileById = new Map(profiles.map(profile => [profile.id, profile]));
+      return Response.json({ items: items.map(item => ({ ...item, caterer_business_name: profileById.get(item.caterer_id)?.business_name || 'Traiteur en cours d’attribution', caterer_slug: profileById.get(item.caterer_id)?.slug || '' })) });
     }
     if (body.action === 'list_professional') {
       const profiles = await base44.asServiceRole.entities.CatererProfile.filter({ created_by_id: user.id }, '-created_date', 20);
@@ -58,6 +58,13 @@ export default async function(req: Request): Promise<Response> {
     if (!actor) return Response.json({ error: 'Forbidden' }, { status: 403 });
     if (body.action === 'history' && actor === 'professional') {
       await base44.asServiceRole.entities.QuoteActivity.create({ quote_id: quote.id, type: 'view', label: 'Dossier ouvert par le traiteur', actor });
+    }
+    if (body.action === 'mark_read') {
+      const activity = await base44.asServiceRole.entities.QuoteActivity.get(body.activity_id);
+      if (!activity || activity.quote_id !== quote.id || activity.type !== 'message') return Response.json({ error: 'Message introuvable' }, { status: 404 });
+      if (activity.actor !== actor && ['client', 'professional'].includes(actor) && !activity.read_at) {
+        await base44.asServiceRole.entities.QuoteActivity.update(activity.id, { read_at: new Date().toISOString(), read_by: actor });
+      }
     }
     if (body.action === 'message') {
       const message = String(body.message || '').trim().slice(0, 2000);
@@ -118,7 +125,7 @@ export default async function(req: Request): Promise<Response> {
     const allActivities = await base44.asServiceRole.entities.QuoteActivity.filter({ quote_id: quote.id }, '-created_date', 300);
     const activities = actor === 'client' ? allActivities.filter(item => item.type !== 'internal_note') : allActivities;
     const updated = await base44.asServiceRole.entities.QuoteRequest.get(quote.id);
-    return Response.json({ item: { ...updated, caterer_business_name: catererProfile?.business_name || 'Traiteur en cours d’attribution' }, activities, actor });
+    return Response.json({ item: { ...updated, caterer_business_name: catererProfile?.business_name || 'Traiteur en cours d’attribution', caterer_slug: catererProfile?.slug || '' }, activities, actor });
   } catch (error) {
     console.error('quoteConversation', error);
     return Response.json({ error: error.message || 'Échange impossible' }, { status: 500 });

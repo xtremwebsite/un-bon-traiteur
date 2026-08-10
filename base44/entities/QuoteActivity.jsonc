@@ -30,6 +30,17 @@
         "professional",
         "system"
       ]
+    },
+    "read_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "read_by": {
+      "type": "string",
+      "enum": [
+        "client",
+        "professional"
+      ]
     }
   },
   "required": [
