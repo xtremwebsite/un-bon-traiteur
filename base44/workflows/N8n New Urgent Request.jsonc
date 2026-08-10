@@ -1,4 +1,16 @@
 {
+  "name": "N8n - Nouvelle demande urgente",
+  "description": "Transmet chaque nouvelle demande urgente \u00e0 n8n.",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "UrgentRequest",
+      "events": [
+        "create"
+      ]
+    },
+    "condition": null
+  },
   "definition": {
     "document": {
       "dsl": "1.0.0",
@@ -15,8 +27,7 @@
             "args": {
               "entity_name": "UrgentRequest",
               "entity_id": "${ .trigger.entity_id }",
-              "event_name": "urgent_request.created",
-              "mode": "production"
+              "event_name": "urgent_request.created"
             }
           },
           "then": "end",
@@ -27,17 +38,5 @@
         }
       }
     ]
-  },
-  "trigger": {
-    "condition": null,
-    "config": {
-      "trigger_type": "entity",
-      "events": [
-        "create"
-      ],
-      "entity_name": "UrgentRequest"
-    }
-  },
-  "description": "Transmet chaque nouvelle demande urgente \u00e0 n8n.",
-  "name": "N8n - Nouvelle demande urgente"
+  }
 }

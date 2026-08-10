@@ -17,7 +17,9 @@ export default async function(req: Request): Promise<Response> {
   const base44 = createClientFromRequest(req);
   let logId = '';
   try {
-    const { entity_name, entity_id, event_name, mode = 'production' } = await req.json();
+    const { entity_name, entity_id, event_name, mode: requestedMode } = await req.json();
+    const configs = requestedMode ? [] : await base44.asServiceRole.entities.WebhookConfig.list('-updated_date', 1);
+    const mode = requestedMode || configs[0]?.mode || 'production';
     if (!allowedEntities.includes(entity_name) || !entity_id || !event_name || !targets[mode]) return Response.json({ error: 'Invalid webhook payload' }, { status: 400 });
     const idempotencyKey = `${event_name}:${entity_id}:${mode}`;
     const existing = await base44.asServiceRole.entities.WebhookDelivery.filter({ idempotency_key: idempotencyKey }, '-created_date', 1);

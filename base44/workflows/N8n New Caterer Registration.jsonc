@@ -27,8 +27,7 @@
             "args": {
               "entity_name": "CatererProfile",
               "entity_id": "${ .trigger.entity_id }",
-              "event_name": "caterer_registration.created",
-              "mode": "production"
+              "event_name": "caterer_registration.created"
             }
           },
           "then": "end",

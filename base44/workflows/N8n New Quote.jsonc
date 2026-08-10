@@ -1,4 +1,16 @@
 {
+  "name": "N8n - Nouvelle demande de devis",
+  "description": "Transmet chaque nouvelle demande de devis \u00e0 n8n.",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "QuoteRequest",
+      "events": [
+        "create"
+      ]
+    },
+    "condition": null
+  },
   "definition": {
     "document": {
       "dsl": "1.0.0",
@@ -15,8 +27,7 @@
             "args": {
               "entity_name": "QuoteRequest",
               "entity_id": "${ .trigger.entity_id }",
-              "event_name": "quote_request.created",
-              "mode": "production"
+              "event_name": "quote_request.created"
             }
           },
           "then": "end",
@@ -27,17 +38,5 @@
         }
       }
     ]
-  },
-  "trigger": {
-    "condition": null,
-    "config": {
-      "trigger_type": "entity",
-      "events": [
-        "create"
-      ],
-      "entity_name": "QuoteRequest"
-    }
-  },
-  "description": "Transmet chaque nouvelle demande de devis \u00e0 n8n.",
-  "name": "N8n - Nouvelle demande de devis"
+  }
 }
