@@ -6,6 +6,13 @@ export default async function(req: Request): Promise<Response> {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     const body = await req.json();
+    if (body.action === 'list_client') {
+      const items = await base44.asServiceRole.entities.QuoteRequest.filter({ $or: [{ created_by_id: user.id }, { email: user.email }] }, '-last_activity_at', 200);
+      const profileIds = [...new Set(items.map(item => item.caterer_id).filter(Boolean))];
+      const profiles = profileIds.length ? await base44.asServiceRole.entities.CatererProfile.filter({ id: { $in: profileIds } }, '-created_date', 200) : [];
+      const names = new Map(profiles.map(profile => [profile.id, profile.business_name]));
+      return Response.json({ items: items.map(item => ({ ...item, caterer_business_name: names.get(item.caterer_id) || 'Traiteur en cours d’attribution' })) });
+    }
     if (body.action === 'list_professional') {
       const profiles = await base44.asServiceRole.entities.CatererProfile.filter({ created_by_id: user.id }, '-created_date', 20);
       const profileIds = profiles.map(item => item.id);
@@ -57,19 +64,24 @@ export default async function(req: Request): Promise<Response> {
       if (!message) return Response.json({ error: 'Message vide' }, { status: 400 });
       const activity = await base44.asServiceRole.entities.QuoteActivity.create({ quote_id: quote.id, type: 'message', label: actor === 'professional' ? 'Réponse du traiteur' : actor === 'client' ? 'Message du client' : 'Message administrateur', details: message, actor });
       await base44.asServiceRole.entities.QuoteRequest.update(quote.id, { status: actor === 'professional' ? 'responses_received' : quote.status, last_activity_at: new Date().toISOString() });
-      if (actor === 'professional') {
+      if (['professional', 'client'].includes(actor)) {
+        const sentByProfessional = actor === 'professional';
         try {
           await base44.functions.invoke('sendN8nWebhook', {
             entity_name: 'QuoteRequest',
             entity_id: quote.id,
-            event_name: 'quote_response_sent',
+            event_name: sentByProfessional ? 'quote_response_sent' : 'quote_client_response_sent',
             delivery_key: activity.id,
             context: {
-              recipient_email: quote.email || '',
-              recipient_name: [quote.first_name, quote.last_name].filter(Boolean).join(' '),
-              caterer_name: catererProfile?.business_name || 'Votre traiteur',
-              caterer_email: catererProfile?.email || catererProfile?.created_by || '',
+              recipient_type: sentByProfessional ? 'client' : 'professional',
+              recipient_email: sentByProfessional ? quote.email || '' : catererProfile?.email || quote.caterer_email || '',
+              recipient_name: sentByProfessional ? [quote.first_name, quote.last_name].filter(Boolean).join(' ') : catererProfile?.business_name || 'Traiteur',
+              sender_name: sentByProfessional ? catererProfile?.business_name || 'Votre traiteur' : [quote.first_name, quote.last_name].filter(Boolean).join(' ') || 'Votre client',
+              notification_subject: sentByProfessional ? 'Vous avez reçu une réponse à votre demande' : `Vous avez reçu une réponse au devis ${quote.reference}`,
+              caterer_name: catererProfile?.business_name || 'Traiteur',
+              reference: quote.reference || '',
               message,
+              conversation_url: sentByProfessional ? `https://bon-traiteur-go.base44.app/mes-devis?quote=${quote.id}` : 'https://bon-traiteur-go.base44.app/devis-traiteur',
               footer: 'Envoyé par unbontraiteur.com'
             }
           });
@@ -106,7 +118,7 @@ export default async function(req: Request): Promise<Response> {
     const allActivities = await base44.asServiceRole.entities.QuoteActivity.filter({ quote_id: quote.id }, '-created_date', 300);
     const activities = actor === 'client' ? allActivities.filter(item => item.type !== 'internal_note') : allActivities;
     const updated = await base44.asServiceRole.entities.QuoteRequest.get(quote.id);
-    return Response.json({ item: updated, activities, actor });
+    return Response.json({ item: { ...updated, caterer_business_name: catererProfile?.business_name || 'Traiteur en cours d’attribution' }, activities, actor });
   } catch (error) {
     console.error('quoteConversation', error);
     return Response.json({ error: error.message || 'Échange impossible' }, { status: 500 });
