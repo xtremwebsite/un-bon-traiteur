@@ -1,0 +1,4 @@
+import {CircleMarker,Popup} from 'react-leaflet';
+import {MapPin,UserRound} from 'lucide-react';
+
+export default function ProExtraMarker({item}){return <CircleMarker center={[item.latitude,item.longitude]} radius={10} pathOptions={{color:'hsl(var(--primary))',fillColor:'hsl(var(--chart-4))',fillOpacity:1,weight:4}}><Popup><div className="min-w-52 p-1"><h3 className="flex items-center gap-2 text-base font-bold"><UserRound size={16}/>{item.first_name} {item.last_name}</h3><p className="mt-1 flex items-center gap-1 text-sm"><MapPin size={14}/>{item.city}</p><div className="mt-2 flex flex-wrap gap-1">{(item.skills||[]).slice(0,3).map(skill=><span key={skill} className="rounded-full bg-secondary px-2 py-1 text-xs">{skill}</span>)}</div><a href={`/extras-pro?extra=${item.id}`} className="mt-3 block rounded-lg bg-primary px-3 py-2 text-center text-sm font-bold text-primary-foreground">Voir la fiche</a></div></Popup></CircleMarker>;}

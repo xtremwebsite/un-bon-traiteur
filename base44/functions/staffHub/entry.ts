@@ -69,6 +69,23 @@ export default async function(req: Request): Promise<Response> {
       return Response.json({ employee: updated });
     }
 
+    if (action === 'available_regular_extras') {
+      requireManager();
+      const eventDate = String(body.event_date || '');
+      const role = String(body.role || '').trim();
+      if (!eventDate || !role) return Response.json({ error: 'Date et métier requis' }, { status: 400 });
+      if (!profile) return Response.json({ error: 'Profil traiteur introuvable' }, { status: 404 });
+      const [extras, bookings, previous] = await Promise.all([
+        base44.asServiceRole.entities.ExtraProfile.filter({ status: 'approved', active: true, available: true }, '-experience_years', 500),
+        base44.asServiceRole.entities.ExtraBooking.filter({ booking_date: eventDate, status: { $in: ['pending','confirmed'] } }, '-created_date', 500),
+        base44.asServiceRole.entities.ExtraBooking.filter({ caterer_id: profile.id, status: 'confirmed' }, '-booking_date', 500)
+      ]);
+      const busy = new Set(bookings.map(item => item.extra_profile_id));
+      const regular = new Set(previous.map(item => item.extra_profile_id));
+      const items = extras.filter(item => !busy.has(item.id) && (item.skills || []).includes(role) && ((item.availability_dates || []).includes(eventDate) || (item.availability_slots || []).some(slot => slot.date === eventDate))).map(item => ({ id:item.id, first_name:item.first_name, last_name:item.display_last_name ? item.last_name : '', city:item.city, skills:item.skills || [], experience_years:item.experience_years || 0, photo_url:item.photo_urls?.[0] || '', availability_dates:item.availability_dates || [], availability_slots:item.availability_slots || [], regular:regular.has(item.id) })).sort((a,b) => Number(b.regular) - Number(a.regular) || b.experience_years - a.experience_years);
+      return Response.json({ items, event_date:eventDate, role });
+    }
+
     if (action === 'recommend') {
       requireManager();
       const quote = await loadQuote(body.quote_id);
