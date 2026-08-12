@@ -1,0 +1,8 @@
+import {Link} from 'react-router-dom';
+import {CheckCircle2,Users} from 'lucide-react';
+import ExtraRequestForm from '@/components/extras/ExtraRequestForm';
+import PublishedRequestList from '@/components/extras/PublishedRequestList';
+
+export default function ProExtraPublishPanel({editing,result,requests,bookings,onSubmit,onCancel,onEdit,onDelete}){
+  return <div className="mx-auto mt-7 max-w-4xl space-y-6"><section className="rounded-3xl border bg-card p-6 shadow-lg sm:p-8"><p className="text-sm font-bold uppercase tracking-widest text-destructive">Publication</p><h2 className="mt-1 text-2xl font-bold">Créer une annonce</h2><p className="mb-6 mt-1 text-sm text-muted-foreground">Décrivez votre besoin pour recevoir des candidatures ciblées.</p><ExtraRequestForm onSubmit={onSubmit} request={editing} onCancel={onCancel}/></section>{result&&<section className="rounded-3xl border border-primary/20 bg-secondary p-6"><div className="flex items-start gap-3"><CheckCircle2 className="mt-0.5 text-primary"/><div><h3 className="font-bold">Annonce publiée</h3><p className="mt-1 flex items-center gap-2 text-sm"><Users size={16}/><b>{result.count} profil(s)</b> actuellement disponible(s) correspondent à votre recherche.</p><Link to={`/extras-pro?mode=search&skill=${encodeURIComponent(result.role)}&date=${result.date}`} className="mt-4 inline-block rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground">Voir les profils disponibles</Link></div></div></section>}{requests.length>0&&<PublishedRequestList items={requests} bookings={bookings} onEdit={onEdit} onDelete={onDelete}/>}</div>;
+}

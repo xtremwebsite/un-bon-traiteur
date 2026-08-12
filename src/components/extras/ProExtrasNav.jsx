@@ -1,4 +1,4 @@
 import {BriefcaseBusiness,History,Search,Star} from 'lucide-react';
 import {Link} from 'react-router-dom';
-const steps=[['/extras-pro#publier','1','Publier',BriefcaseBusiness],['/extras-pro#rechercher','2','Rechercher',Search],['/suivi-extras','3','Suivi',History],['/suivi-extras?tab=regular','4','Extras réguliers',Star]];
+const steps=[['/extras-pro?mode=publish','1','Publier',BriefcaseBusiness],['/extras-pro?mode=search','2','Rechercher',Search],['/suivi-extras','3','Suivi',History],['/suivi-extras?tab=regular','4','Extras réguliers',Star]];
 export default function ProExtrasNav(){return <nav className="mt-5 overflow-x-auto"><div className="grid min-w-[680px] grid-cols-4 gap-2 rounded-2xl border bg-card p-2 shadow-sm">{steps.map(([to,number,label,Icon])=><Link key={to} to={to} className="flex items-center gap-3 rounded-xl px-3 py-2.5 font-bold text-primary hover:bg-secondary"><span className="grid h-7 w-7 place-items-center rounded-full bg-primary text-xs text-primary-foreground">{number}</span><Icon size={16}/><span>{label}</span></Link>)}</div></nav>;}
