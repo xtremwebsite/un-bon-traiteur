@@ -1,0 +1,75 @@
+{
+  "name": "CatererExtraReview",
+  "type": "object",
+  "properties": {
+    "caterer_id": {
+      "type": "string"
+    },
+    "extra_user_id": {
+      "type": "string"
+    },
+    "booking_id": {
+      "type": "string"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "comment": {
+      "type": "string"
+    },
+    "mission_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "caterer_id",
+    "extra_user_id",
+    "booking_id",
+    "rating",
+    "mission_date"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
