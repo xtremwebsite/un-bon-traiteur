@@ -113,7 +113,15 @@ export default async function(req: Request): Promise<Response> {
         if(!['pending','confirmed'].includes(booking.status))return Response.json({error:'Cette demande ne peut plus être annulée'},{status:400});
         const item=await base44.asServiceRole.entities.ExtraBooking.update(booking.id,{status:'cancelled',cancelled_at:new Date().toISOString(),cancelled_by:isExtra?'extra':'caterer'});
         const staffAssignments=await base44.asServiceRole.entities.StaffAssignment.filter({booking_id:booking.id},'-created_date',20);if(staffAssignments.length)await base44.asServiceRole.entities.StaffAssignment.bulkUpdate(staffAssignments.map(assignment=>({id:assignment.id,status:'cancelled',responded_at:new Date().toISOString()})));
-        if(booking.extra_request_id)await base44.asServiceRole.entities.ExtraRequest.update(booking.extra_request_id,{status:'open'}); return Response.json({item});
+        if(booking.extra_request_id)await base44.asServiceRole.entities.ExtraRequest.update(booking.extra_request_id,{status:'open'});
+        let notificationSent=false;let emailSent=false;
+        if(isExtra){
+          const catererUserId=booking.caterer_user_id||booking.created_by_id;const catererUser=catererUserId?await base44.asServiceRole.entities.User.get(catererUserId):null;const recipientEmail=catererUser?.email||booking.caterer_email;const missionDate=new Date(`${booking.booking_date}T12:00:00`).toLocaleDateString('fr-FR');const extraName=cleanText(booking.extra_name||user.full_name||'Un Extra');const prestation=cleanText(booking.service_details||'la prestation prévue');const message=`Attention, ${extraName} vient d’annuler sa participation du ${missionDate} pour la prestation « ${prestation} ». L’annonce a été rouverte afin de rechercher un remplaçant.`;const operations=[];
+          if(catererUserId)operations.push(base44.asServiceRole.entities.UserNotification.create({target_user_id:catererUserId,type:'extra_cancellation',title:`Annulation pour le ${missionDate}`,message,link:'/suivi-extras?tab=tracking',related_id:booking.id}).then(()=>{notificationSent=true}));
+          if(recipientEmail)operations.push(base44.asServiceRole.integrations.Core.SendEmail({to:recipientEmail,from_name:'Un Bon Traiteur',subject:`Attention — ${extraName} a annulé la mission du ${missionDate}`,body:`Bonjour ${cleanText(booking.caterer_contact_name||booking.caterer_name||'')},\n\n${message}\n\nConsultez immédiatement le suivi de vos Extras :\nhttps://bon-traiteur-go.base44.app/suivi-extras?tab=tracking\n\nUn Bon Traiteur`}).then(()=>{emailSent=true}));
+          const results=await Promise.allSettled(operations);results.filter(result=>result.status==='rejected').forEach(result=>console.error('Alerte annulation Extra',result.reason));
+        }
+        return Response.json({item,notification_sent:notificationSent,email_sent:emailSent});
       }
       if(!['declined','cancelled','expired'].includes(booking.status))return Response.json({error:'Annulez d’abord la demande avant de la supprimer'},{status:400});
       await base44.asServiceRole.entities.ExtraBooking.delete(booking.id); return Response.json({deleted:true});
