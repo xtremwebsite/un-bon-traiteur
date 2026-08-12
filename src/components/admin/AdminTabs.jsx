@@ -1,7 +1,7 @@
 const tabs = [
   ['overview', 'Vue d’ensemble'],
   ['analytics', 'Statistiques'],
-  ['professionals', 'Professionnels'],
+  ['professionals', 'Traiteurs & import'],
   ['extras', 'Validation Extra'],
   ['extraBookings', 'Demandes Extras'],
   ['users', 'Particuliers'],
