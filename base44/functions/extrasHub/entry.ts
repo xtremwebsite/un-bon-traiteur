@@ -13,6 +13,7 @@ export default async function(req: Request): Promise<Response> {
       if(body.confirmation!==true)return Response.json({error:'Confirmation requise'},{status:400});
       const profiles=await base44.asServiceRole.entities.ExtraProfile.filter({created_by_id:user.id},'-created_date',20);
       if(!profiles.length&&user.account_type!=='extra')return Response.json({error:'Aucun compte Extra associé'},{status:403});
+      if(profiles.some(item=>item.stripe_subscription_id))await base44.functions.invoke('extraSubscription',{action:'cancel_for_deletion'});
       const profileIds=profiles.map(item=>item.id);
       const [bookings,assignments]=await Promise.all([
         base44.asServiceRole.entities.ExtraBooking.filter({extra_user_id:user.id},'-created_date',500),
@@ -27,12 +28,19 @@ export default async function(req: Request): Promise<Response> {
       await base44.asServiceRole.entities.User.delete(user.id);
       return Response.json({deleted:true});
     }
+    if(body.action==='admin_email'){
+      if(user.role!=='admin')return Response.json({error:'Accès refusé'},{status:403});
+      const profile=await base44.asServiceRole.entities.ExtraProfile.get(String(body.profile_id||''));const owner=profile?.created_by_id?await base44.asServiceRole.entities.User.get(profile.created_by_id):null;const subject=cleanText(body.subject).slice(0,120);const message=cleanText(body.message).slice(0,4000);
+      if(!owner?.email||!subject||message.length<10)return Response.json({error:'Destinataire, objet ou message invalide'},{status:400});
+      await base44.asServiceRole.integrations.Core.SendEmail({to:owner.email,from_name:'Un Bon Traiteur',subject,body:`Bonjour ${cleanText(profile.first_name)},\n\n${message}\n\nL’équipe Un Bon Traiteur`});
+      return Response.json({sent:true});
+    }
     if(body.action==='save_profile'){
       const input=body.data||{}; const required=['first_name','last_name','email','phone','date_of_birth','address','postal_code','city'];
       if(required.some(field=>!cleanText(input[field])))return Response.json({error:'Complétez tous les champs obligatoires.'},{status:400});
       const caterers=await base44.entities.CatererProfile.filter({created_by_id:user.id},'-created_date',1);
       if(caterers.length)return Response.json({error:'Cette adresse e-mail est déjà associée à un compte traiteur.'},{status:409});
-      const {id,status,admin_comment,created_by,created_by_id,created_date,updated_date,...profileData}=input;
+      const {id,status,admin_comment,subscription_plan,subscription_status,stripe_customer_id,stripe_subscription_id,created_by,created_by_id,created_date,updated_date,...profileData}=input;
       const coordinates=await geocodeLocation(`${profileData.address}, ${profileData.postal_code} ${profileData.city}`);
       const existing=await base44.entities.ExtraProfile.filter({created_by_id:user.id},'-created_date',1);
       const nextStatus=existing[0]?.status==='approved'?'approved':'pending';
@@ -74,6 +82,11 @@ export default async function(req: Request): Promise<Response> {
       if(body.action==='respond_booking'){
         const responderAllowed=booking.initiated_by==='extra'?isCaterer:isExtra;
         if(!responderAllowed||booking.status!=='pending'||!['confirmed','declined'].includes(body.status))return Response.json({error:'Réponse impossible'},{status:400});
+        if(body.status==='confirmed'){
+          const extraProfiles=await base44.asServiceRole.entities.ExtraProfile.filter({created_by_id:booking.extra_user_id},'-created_date',1);const extraProfile=extraProfiles[0];
+          const unlimited=extraProfile?.subscription_plan==='unlimited'&&extraProfile?.subscription_status==='active';
+          if(!unlimited){const month=String(booking.booking_date).slice(0,7);const confirmed=await base44.asServiceRole.entities.ExtraBooking.filter({extra_user_id:booking.extra_user_id,status:'confirmed'},'-booking_date',500);if(confirmed.some(item=>item.id!==booking.id&&String(item.booking_date).startsWith(month)))return Response.json({error:'L’offre gratuite inclut une seule mission confirmée par mois. L’Extra doit activer l’offre illimitée à 10 €/mois.'},{status:402});}
+        }
         let payload={status:body.status};
         if(body.status==='confirmed'){payload={...payload,accepted_at:new Date().toISOString()};if(booking.initiated_by!=='extra'){const extras=await base44.asServiceRole.entities.ExtraProfile.filter({created_by_id:user.id},'-created_date',1);const extra=extras[0];payload={...payload,extra_name:[extra?.first_name,extra?.last_name].filter(Boolean).join(' '),extra_phone:extra?.phone||'',extra_email:extra?.email||user.email,extra_city:extra?.city||'',extra_skills:extra?.skills||[],extra_experience:extra?.experience_details||''};}}
         const item=await base44.asServiceRole.entities.ExtraBooking.update(booking.id,payload);

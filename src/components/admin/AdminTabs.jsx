@@ -2,7 +2,7 @@ const tabs = [
   ['overview', 'Vue d’ensemble'],
   ['analytics', 'Statistiques'],
   ['professionals', 'Professionnels'],
-  ['extras', 'Validation Extras'],
+  ['extras', 'Validation Extra'],
   ['extraBookings', 'Demandes Extras'],
   ['users', 'Particuliers'],
   ['subscriptions', 'Abonnements & tarifs'],

@@ -161,6 +161,30 @@
         "email"
       ],
       "default": "site"
+    },
+    "subscription_plan": {
+      "type": "string",
+      "enum": [
+        "free",
+        "unlimited"
+      ],
+      "default": "free"
+    },
+    "subscription_status": {
+      "type": "string",
+      "enum": [
+        "inactive",
+        "active",
+        "past_due",
+        "cancelled"
+      ],
+      "default": "inactive"
+    },
+    "stripe_customer_id": {
+      "type": "string"
+    },
+    "stripe_subscription_id": {
+      "type": "string"
     }
   },
   "required": [
