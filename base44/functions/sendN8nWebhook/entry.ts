@@ -5,7 +5,7 @@ const targets = {
   production: 'https://n8n.xtremwebsite.com/webhook/unbontraiteur',
   test: 'https://n8n.xtremwebsite.com/webhook-test/unbontraiteur'
 };
-const allowedEntities = ['QuoteRequest', 'UrgentRequest', 'CatererProfile'];
+const allowedEntities = ['QuoteRequest', 'UrgentRequest', 'CatererProfile', 'ExtraProfile'];
 
 async function sign(body, secret) {
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
@@ -36,7 +36,9 @@ export default async function(req: Request): Promise<Response> {
     if (!record) throw new Error('Source record not found');
     const identification = entity_name === 'CatererProfile'
       ? { caterer_id: record.id, caterer_email: record.email || record.created_by || '', business_name: record.business_name || '' }
-      : { reference: record.reference || '', request_source: record.request_source || '', caterer_id: record.caterer_id || '', caterer_email: record.caterer_email || '' };
+      : entity_name === 'ExtraProfile'
+        ? { extra_id: record.id, extra_email: record.email || record.created_by || '', extra_name: [record.first_name, record.last_name].filter(Boolean).join(' ') }
+        : { reference: record.reference || '', request_source: record.request_source || '', caterer_id: record.caterer_id || '', caterer_email: record.caterer_email || '' };
     const payload = { event: event_name, idempotency_key: idempotencyKey, occurred_at: new Date().toISOString(), entity: entity_name, identification, data: record, context: context || null };
     const body = JSON.stringify(payload);
     const signature = await sign(body, secrets.get('N8N_WEBHOOK_SECRET'));

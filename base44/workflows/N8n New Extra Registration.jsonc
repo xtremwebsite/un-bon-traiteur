@@ -1,0 +1,50 @@
+{
+  "name": "N8n - Nouvelle inscription Extra",
+  "description": "Notifie l\u2019administrateur et l\u2019Extra que son profil attend une validation.",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "ExtraProfile",
+      "events": [
+        "create"
+      ]
+    },
+    "condition": "${ .trigger.data.status == \"pending\" }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "n8n_new_extra_registration",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "send_pending_notification": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "sendN8nWebhook",
+            "args": {
+              "entity_name": "ExtraProfile",
+              "entity_id": "${ .trigger.entity_id }",
+              "event_name": "extra_registration.pending",
+              "context": {
+                "notify_admin": true,
+                "notify_extra": true,
+                "recipient_email": "${ .trigger.data.email }",
+                "recipient_name": "${ .trigger.data.first_name }",
+                "notification_subject": "Votre compte Extra est en attente de validation",
+                "admin_subject": "Nouveau compte Extra \u00e0 valider"
+              }
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Notifier l\u2019inscription Extra",
+            "description": "Admin et Extra inform\u00e9s"
+          }
+        }
+      }
+    ]
+  }
+}

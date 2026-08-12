@@ -16,8 +16,9 @@ export default async function(req: Request): Promise<Response> {
       if(caterers.length)return Response.json({error:'Cette adresse e-mail est déjà associée à un compte traiteur.'},{status:409});
       const {id,status,admin_comment,created_by,created_by_id,created_date,updated_date,...profileData}=input;
       const coordinates=await geocodeLocation(`${profileData.address}, ${profileData.postal_code} ${profileData.city}`);
-      const payload={...profileData,...(coordinates||{}),status:'pending',admin_comment:'',active:true};
       const existing=await base44.entities.ExtraProfile.filter({created_by_id:user.id},'-created_date',1);
+      const nextStatus=existing[0]?.status==='approved'?'approved':'pending';
+      const payload={...profileData,...(coordinates||{}),status:nextStatus,admin_comment:'',active:true};
       const item=existing[0]?await base44.asServiceRole.entities.ExtraProfile.update(existing[0].id,payload):await base44.entities.ExtraProfile.create(payload);
       return Response.json({item});
     }

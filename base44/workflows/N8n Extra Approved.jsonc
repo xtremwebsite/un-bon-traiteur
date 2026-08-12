@@ -1,0 +1,49 @@
+{
+  "name": "N8n - Validation compte Extra",
+  "description": "Informe l\u2019Extra lorsque son compte est valid\u00e9 par un administrateur.",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "ExtraProfile",
+      "events": [
+        "update"
+      ]
+    },
+    "condition": "${ .trigger.data.status == \"approved\" and .trigger.old_data.status != \"approved\" }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "n8n_extra_approved",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "send_approval_notification": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "sendN8nWebhook",
+            "args": {
+              "entity_name": "ExtraProfile",
+              "entity_id": "${ .trigger.entity_id }",
+              "event_name": "extra_registration.approved",
+              "context": {
+                "notify_extra": true,
+                "recipient_email": "${ .trigger.data.email }",
+                "recipient_name": "${ .trigger.data.first_name }",
+                "notification_subject": "Votre compte Extra est valid\u00e9",
+                "notification_message": "Votre planning et les annonces sont maintenant accessibles."
+              }
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Confirmer la validation",
+            "description": "E-mail envoy\u00e9 via n8n"
+          }
+        }
+      }
+    ]
+  }
+}
