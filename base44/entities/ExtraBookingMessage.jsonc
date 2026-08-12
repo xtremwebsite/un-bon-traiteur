@@ -26,6 +26,13 @@
     },
     "message": {
       "type": "string"
+    },
+    "read_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "read_by_user_id": {
+      "type": "string"
     }
   },
   "required": [

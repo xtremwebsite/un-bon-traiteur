@@ -44,7 +44,9 @@ export default async function(req: Request): Promise<Response> {
         extras_worked: workedExtraIds.size
       };
       const quoteById = new Map(items.map(item => [item.id, item]));
-      const recent_messages = activities.filter(item => item.type === 'message' && item.actor === 'client').sort((a, b) => String(b.created_date).localeCompare(String(a.created_date))).slice(0, 6).map(message => {
+      const latestMessageByQuote = new Map();
+      activities.filter(item => item.type === 'message').sort((a, b) => String(b.created_date).localeCompare(String(a.created_date))).forEach(message => { if (!latestMessageByQuote.has(message.quote_id)) latestMessageByQuote.set(message.quote_id, message); });
+      const recent_messages = [...latestMessageByQuote.values()].filter(message => message.actor === 'client').slice(0, 50).map(message => {
         const item = quoteById.get(message.quote_id);
         return { id: message.id, quote_id: message.quote_id, details: message.details, created_date: message.created_date, reference: item?.reference || '', client_name: [item?.first_name, item?.last_name].filter(Boolean).join(' ') || 'Client' };
       });
@@ -62,6 +64,9 @@ export default async function(req: Request): Promise<Response> {
     if (!actor && (quote.created_by_id === user.id || quote.email === user.email)) actor = 'client';
     if (!actor) return Response.json({ error: 'Forbidden' }, { status: 403 });
     if (body.action === 'history' && actor === 'professional') {
+      const clientMessages = await base44.asServiceRole.entities.QuoteActivity.filter({ quote_id: quote.id, type: 'message', actor: 'client' }, '-created_date', 300);
+      const unreadMessages = clientMessages.filter(item => !item.read_at);
+      if (unreadMessages.length) await base44.asServiceRole.entities.QuoteActivity.bulkUpdate(unreadMessages.map(item => ({ id: item.id, read_at: new Date().toISOString(), read_by: 'professional' })));
       await base44.asServiceRole.entities.QuoteActivity.create({ quote_id: quote.id, type: 'view', label: 'Dossier ouvert par le traiteur', actor });
     }
     if (body.action === 'mark_read') {
