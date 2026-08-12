@@ -24,7 +24,11 @@ export default async function(req: Request): Promise<Response> {
         profilePaths.length ? base44.asServiceRole.entities.PageVisit.filter({ page_path: { $in: profilePaths } }, '-last_seen', 2000) : []
       ]);
       const quoteIds = items.map(item => item.id);
-      const activities = quoteIds.length ? await base44.asServiceRole.entities.QuoteActivity.filter({ quote_id: { $in: quoteIds } }, '-created_date', 2000) : [];
+      const bookingIds = bookings.map(item => item.id);
+      const [activities, bookingMessages] = await Promise.all([
+        quoteIds.length ? base44.asServiceRole.entities.QuoteActivity.filter({ quote_id: { $in: quoteIds } }, '-created_date', 2000) : [],
+        bookingIds.length ? base44.asServiceRole.entities.ExtraBookingMessage.filter({ booking_id: { $in: bookingIds } }, '-created_date', 2000) : []
+      ]);
       const now = new Date();
       const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
       const monthDay = monthStart.slice(0, 10);
@@ -50,7 +54,10 @@ export default async function(req: Request): Promise<Response> {
         const item = quoteById.get(message.quote_id);
         return { id: message.id, quote_id: message.quote_id, details: message.details, created_date: message.created_date, reference: item?.reference || '', client_name: [item?.first_name, item?.last_name].filter(Boolean).join(' ') || 'Client' };
       });
-      return Response.json({ items, bookings, assignments, stats, recent_messages });
+      const latestMessageByBooking = new Map();
+      bookingMessages.forEach(message => { if (!latestMessageByBooking.has(message.booking_id)) latestMessageByBooking.set(message.booking_id, message); });
+      const extra_messages_to_handle = [...latestMessageByBooking.values()].filter(message => message.sender_role === 'extra').length;
+      return Response.json({ items, bookings, assignments, stats, recent_messages, extra_messages_to_handle });
     }
     const quote = await base44.asServiceRole.entities.QuoteRequest.get(String(body.quote_id || ''));
     if (!quote) return Response.json({ error: 'Devis introuvable' }, { status: 404 });
