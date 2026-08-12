@@ -95,7 +95,7 @@ export default async function(req: Request): Promise<Response> {
         const existing=await base44.asServiceRole.entities.CatererExtraReview.filter({caterer_id:booking.caterer_id,extra_user_id:user.id},'-created_date',1);const payload={caterer_id:booking.caterer_id,extra_user_id:user.id,booking_id:booking.id,rating,comment,mission_date:booking.booking_date};const item=existing[0]?await base44.asServiceRole.entities.CatererExtraReview.update(existing[0].id,payload):await base44.entities.CatererExtraReview.create(payload);const reviews=await base44.asServiceRole.entities.CatererExtraReview.filter({caterer_id:booking.caterer_id},'-created_date',500);const average=reviews.reduce((sum,review)=>sum+Number(review.rating||0),0)/reviews.length;return Response.json({item,average_rating:average,review_count:reviews.length});
       }
       if(body.action==='respond_booking'){
-        const responderAllowed=booking.initiated_by==='extra'?isCaterer:isExtra;
+        const responderAllowed=user.role==='admin'||(booking.initiated_by==='extra'?isCaterer:isExtra);
         if(!responderAllowed||booking.status!=='pending'||!['confirmed','declined'].includes(body.status))return Response.json({error:'Réponse impossible'},{status:400});
         if(body.status==='confirmed'){
           const extraProfiles=await base44.asServiceRole.entities.ExtraProfile.filter({created_by_id:booking.extra_user_id},'-created_date',1);const extraProfile=extraProfiles[0];
