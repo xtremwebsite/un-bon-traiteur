@@ -78,18 +78,25 @@
         "xxl"
       ]
     },
-    "body_type": {
-      "type": "string",
-      "enum": [
-        "mince",
-        "moyenne",
-        "forte"
-      ]
+    "height_cm": {
+      "type": "number",
+      "minimum": 150,
+      "maximum": 220
     },
     "languages": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "enum": [
+          "Fran\u00e7ais",
+          "Anglais",
+          "Arabe",
+          "Italien",
+          "Espagnol",
+          "Chinois",
+          "Allemand",
+          "Autres"
+        ]
       }
     },
     "certifications": {
@@ -144,13 +151,15 @@
       "type": "number"
     },
     "transport": {
-      "type": "string",
-      "enum": [
-        "none",
-        "public",
-        "vehicle",
-        "both"
-      ]
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "none",
+          "public",
+          "vehicle"
+        ]
+      }
     },
     "hourly_rate": {
       "type": "number"
