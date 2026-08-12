@@ -18,6 +18,14 @@
       "type": "string",
       "format": "date"
     },
+    "gender": {
+      "type": "string",
+      "enum": [
+        "homme",
+        "femme",
+        "autre"
+      ]
+    },
     "address": {
       "type": "string"
     },
@@ -58,6 +66,25 @@
     },
     "experience_details": {
       "type": "string"
+    },
+    "clothing_size": {
+      "type": "string",
+      "enum": [
+        "xs",
+        "s",
+        "m",
+        "l",
+        "xl",
+        "xxl"
+      ]
+    },
+    "body_type": {
+      "type": "string",
+      "enum": [
+        "mince",
+        "moyenne",
+        "forte"
+      ]
     },
     "languages": {
       "type": "array",
