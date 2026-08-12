@@ -138,6 +138,32 @@
         "type": "string"
       }
     },
+    "format_pricing": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "min_guests": {
+            "type": "number",
+            "minimum": 1
+          },
+          "max_guests": {
+            "type": "number",
+            "minimum": 1
+          },
+          "price_from": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    },
     "dietary_options": {
       "type": "array",
       "items": {

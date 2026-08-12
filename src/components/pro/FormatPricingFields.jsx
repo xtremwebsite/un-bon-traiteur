@@ -1,0 +1,12 @@
+import { Euro, Users } from 'lucide-react';
+
+export default function FormatPricingFields({ data, setValue }) {
+  const selected = data.formats || [];
+  const pricing = data.format_pricing || [];
+  const update = (name, key, value) => {
+    const current = pricing.find(item => item.name === name) || { name, min_guests: '', max_guests: '', price_from: '' };
+    setValue('format_pricing', [...pricing.filter(item => item.name !== name), { ...current, [key]: value }]);
+  };
+  if (!selected.length) return null;
+  return <section className="rounded-3xl border bg-card/90 p-6 shadow-xl backdrop-blur-xl"><div><p className="text-xs font-bold uppercase tracking-widest text-destructive">Tarifs par formule</p><h2 className="mt-1 font-heading text-xl font-bold">Restauration & conditions</h2><p className="mt-1 text-sm text-muted-foreground">Indiquez la capacité et le prix de départ pour chaque format sélectionné.</p></div><div className="mt-5 space-y-4">{selected.map(name => { const item = pricing.find(entry => entry.name === name) || {}; return <fieldset key={name} className="rounded-2xl border bg-background/70 p-4"><legend className="px-2 font-bold text-primary">{name}</legend><div className="grid gap-3 sm:grid-cols-3"><label className="text-sm font-semibold"><span className="flex items-center gap-2"><Users size={15}/>Minimum</span><input type="number" min="1" value={item.min_guests ?? ''} onChange={event => update(name, 'min_guests', event.target.value)} className="mt-2 h-11 w-full rounded-xl border bg-background px-3"/></label><label className="text-sm font-semibold"><span className="flex items-center gap-2"><Users size={15}/>Maximum</span><input type="number" min="1" value={item.max_guests ?? ''} onChange={event => update(name, 'max_guests', event.target.value)} className="mt-2 h-11 w-full rounded-xl border bg-background px-3"/></label><label className="text-sm font-semibold"><span className="flex items-center gap-2"><Euro size={15}/>Dès / personne</span><input type="number" min="0" step="0.01" value={item.price_from ?? ''} onChange={event => update(name, 'price_from', event.target.value)} className="mt-2 h-11 w-full rounded-xl border bg-background px-3"/></label></div></fieldset>; })}</div></section>;
+}
