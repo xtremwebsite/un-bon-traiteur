@@ -9,6 +9,24 @@ export default async function(req: Request): Promise<Response> {
     const base44=createClientFromRequest(req); const user=await base44.auth.me();
     if(!user)return Response.json({error:'Non autorisé'},{status:401});
     const body=await req.json();
+    if(body.action==='delete_account'){
+      if(body.confirmation!==true)return Response.json({error:'Confirmation requise'},{status:400});
+      const profiles=await base44.asServiceRole.entities.ExtraProfile.filter({created_by_id:user.id},'-created_date',20);
+      if(!profiles.length&&user.account_type!=='extra')return Response.json({error:'Aucun compte Extra associé'},{status:403});
+      const profileIds=profiles.map(item=>item.id);
+      const [bookings,assignments]=await Promise.all([
+        base44.asServiceRole.entities.ExtraBooking.filter({extra_user_id:user.id},'-created_date',500),
+        base44.asServiceRole.entities.StaffAssignment.filter({$or:[{assignee_user_id:user.id},{assignee_email:user.email}]},'-created_date',500)
+      ]);
+      if(bookings.length)await base44.asServiceRole.entities.ExtraBooking.bulkUpdate(bookings.map(item=>({id:item.id,extra_name:'Compte supprimé',extra_phone:'',extra_email:'',extra_city:'',extra_skills:[],extra_experience:''})));
+      if(assignments.length)await base44.asServiceRole.entities.StaffAssignment.bulkUpdate(assignments.map(item=>({id:item.id,assignee_name:'Compte supprimé',assignee_email:'compte-supprime@invalid.local',assignee_user_id:''})));
+      if(profileIds.length){
+        await base44.asServiceRole.entities.ExtraRecommendation.deleteMany({extra_id:{$in:profileIds}});
+        await base44.asServiceRole.entities.ExtraProfile.deleteMany({id:{$in:profileIds}});
+      }
+      await base44.asServiceRole.entities.User.delete(user.id);
+      return Response.json({deleted:true});
+    }
     if(body.action==='save_profile'){
       const input=body.data||{}; const required=['first_name','last_name','email','phone','date_of_birth','address','postal_code','city'];
       if(required.some(field=>!cleanText(input[field])))return Response.json({error:'Complétez tous les champs obligatoires.'},{status:400});
