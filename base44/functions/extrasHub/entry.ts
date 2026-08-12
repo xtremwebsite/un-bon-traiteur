@@ -103,6 +103,20 @@ export default async function(req: Request): Promise<Response> {
       if(!['declined','cancelled','expired'].includes(booking.status))return Response.json({error:'Annulez d’abord la demande avant de la supprimer'},{status:400});
       await base44.asServiceRole.entities.ExtraBooking.delete(booking.id); return Response.json({deleted:true});
     }
+    if(body.action==='profile_stats'){
+      const profile=await base44.asServiceRole.entities.ExtraProfile.get(String(body.profile_id||''));
+      if(!profile||(profile.created_by_id!==user.id&&user.role!=='admin'))return Response.json({error:'Accès refusé'},{status:403});
+      const views=await base44.asServiceRole.entities.ExtraProfileView.filter({profile_id:profile.id},'-created_date',500);
+      return Response.json({views:views.length});
+    }
+    if(body.action==='view_profile'){
+      const catererProfiles=await base44.asServiceRole.entities.CatererProfile.filter({created_by_id:user.id},'-created_date',1);
+      if(user.role!=='admin'&&!catererProfiles.length)return Response.json({error:'Accès réservé aux traiteurs'},{status:403});
+      const profile=await base44.asServiceRole.entities.ExtraProfile.get(String(body.profile_id||''));if(!profile||profile.status!=='approved')return Response.json({error:'Profil indisponible'},{status:404});
+      const viewDay=new Date().toISOString().slice(0,10);const existing=await base44.asServiceRole.entities.ExtraProfileView.filter({profile_id:profile.id,viewer_user_id:user.id,view_day:viewDay},'-created_date',1);
+      if(!existing.length)await base44.asServiceRole.entities.ExtraProfileView.create({profile_id:profile.id,viewer_user_id:user.id,view_day:viewDay});
+      return Response.json({viewed:true});
+    }
     const profiles=await base44.entities.CatererProfile.filter({created_by_id:user.id},'-created_date',1); const caterer=profiles[0];
     if(user.role!=='admin'&&!caterer)return Response.json({error:'Accès réservé aux traiteurs'},{status:403});
     if(body.action==='directory'){

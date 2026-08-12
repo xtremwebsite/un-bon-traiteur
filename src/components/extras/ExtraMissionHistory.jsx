@@ -1,0 +1,8 @@
+import {History,MapPin} from 'lucide-react';
+import {formatAvailabilityDate} from '@/lib/extraAvailability';
+
+export default function ExtraMissionHistory({bookings=[]}){
+  const today=new Date().toISOString().slice(0,10);
+  const items=bookings.filter(item=>item.status==='confirmed'&&item.booking_date<today).sort((a,b)=>b.booking_date.localeCompare(a.booking_date));
+  return <section className="rounded-3xl border bg-card p-5 shadow-lg"><div className="flex items-center gap-2"><History className="text-primary"/><h2 className="text-xl font-bold">Historique des prestations</h2></div><p className="mt-1 text-sm text-muted-foreground">Toutes vos missions réalisées, de la plus récente à la plus ancienne.</p>{items.length?<div className="mt-5 grid gap-3">{items.map(item=><article key={item.id} className="rounded-2xl border p-4"><div className="flex flex-wrap items-start justify-between gap-2"><div><h3 className="font-bold">{item.caterer_name||'Traiteur'}</h3><p className="mt-1 text-sm capitalize text-muted-foreground">{formatAvailabilityDate(item.booking_date)} · {item.period==='evening'?'Soirée':item.period==='both'?'Journée et soirée':'Journée'}</p></div><span className="rounded-full bg-secondary px-3 py-1 text-xs font-bold">Réalisée</span></div><p className="mt-3 flex items-center gap-1 text-sm"><MapPin size={14}/>{item.location||item.caterer_city||'Lieu non renseigné'}</p>{item.service_details&&<p className="mt-2 text-sm"><b>Prestation :</b> {item.service_details}</p>}</article>)}</div>:<p className="mt-5 rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">Aucune prestation passée pour le moment.</p>}</section>;
+}

@@ -1,0 +1,43 @@
+{
+  "name": "ExtraProfileView",
+  "type": "object",
+  "properties": {
+    "profile_id": {
+      "type": "string"
+    },
+    "viewer_user_id": {
+      "type": "string"
+    },
+    "view_day": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "profile_id",
+    "viewer_user_id",
+    "view_day"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
