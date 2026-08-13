@@ -20,6 +20,7 @@ export default function Register() {
   const [otpCode, setOtpCode] = useState("");
   const next = new URLSearchParams(window.location.search).get("next") || "/";
   const isExtra = next === "/inscription-extra";
+  const isCaterer = next === "/inscription-traiteur";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,6 +48,8 @@ export default function Register() {
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
       }
+      if (isCaterer) await base44.auth.updateMe({ account_type: "caterer", account_status: "pending" });
+      if (isExtra) await base44.auth.updateMe({ account_type: "extra", account_status: "pending" });
       window.location.href = next;
     } catch (err) {
       setError(err.message || "Le code de vérification est invalide.");
@@ -129,8 +132,8 @@ export default function Register() {
   return (
     <AuthLayout
       icon={UserPlus}
-      title={isExtra ? "Devenir Extra" : "Créez votre compte"}
-      subtitle={isExtra ? "Créez votre compte puis complétez votre profil professionnel" : "Inscrivez-vous pour commencer"}
+      title={isExtra ? "Devenir Extra" : isCaterer ? "Créer votre compte traiteur" : "Créez votre compte"}
+      subtitle={isExtra ? "Créez votre compte puis complétez votre profil professionnel" : isCaterer ? "Renseignez ensuite vos coordonnées et choisissez votre formule" : "Inscrivez-vous pour commencer"}
       footer={
         <>
           Vous avez déjà un compte ?{" "}
@@ -221,7 +224,7 @@ export default function Register() {
               Création du compte…
             </>
           ) : (
-            isExtra ? "Créer mon compte Extra" : "Créer mon compte"
+            isExtra ? "Créer mon compte Extra" : isCaterer ? "Créer mon compte traiteur" : "Créer mon compte particulier"
           )}
         </Button>
       </form>
