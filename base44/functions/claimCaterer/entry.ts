@@ -6,9 +6,11 @@ export default async function(req: Request): Promise<Response> {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Connexion requise' }, { status: 401 });
     const body = await req.json();
+    const profileId = String(body.profile_id || '');
+    if (!/^[a-f0-9]{24}$/i.test(profileId)) return Response.json({ error: 'Identifiant de fiche invalide' }, { status: 400 });
     if (body.action === 'approve_profile') {
       if (user.role !== 'admin') return Response.json({ error: 'Accès refusé' }, { status: 403 });
-      const profiles = await base44.asServiceRole.entities.CatererProfile.filter({ id: String(body.profile_id || '') }, '-created_date', 1);
+      const profiles = await base44.asServiceRole.entities.CatererProfile.filter({ id: profileId }, '-created_date', 1);
       const profile = profiles[0];
       if (!profile) return Response.json({ error: 'Fiche introuvable' }, { status: 404 });
       const item = await base44.asServiceRole.entities.CatererProfile.update(profile.id, { status: 'approved', published: true, verified: true });
@@ -19,7 +21,7 @@ export default async function(req: Request): Promise<Response> {
       return Response.json({ item });
     }
     if (body.action !== 'claim') return Response.json({ error: 'Action inconnue' }, { status: 400 });
-    const sources = await base44.asServiceRole.entities.CatererProfile.filter({ id: String(body.profile_id || '') }, '-created_date', 1);
+    const sources = await base44.asServiceRole.entities.CatererProfile.filter({ id: profileId }, '-created_date', 1);
     const source = sources[0];
     if (!source || source.profile_origin !== 'public_source' || !source.published) return Response.json({ error: 'Cette fiche ne peut pas être revendiquée' }, { status: 404 });
     if (source.claim_status === 'pending' || source.claim_status === 'claimed') return Response.json({ error: 'Une revendication est déjà en cours pour cette fiche' }, { status: 409 });
