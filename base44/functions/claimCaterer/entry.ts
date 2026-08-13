@@ -12,7 +12,10 @@ export default async function(req: Request): Promise<Response> {
       const profile = profiles[0];
       if (!profile) return Response.json({ error: 'Fiche introuvable' }, { status: 404 });
       const item = await base44.asServiceRole.entities.CatererProfile.update(profile.id, { status: 'approved', published: true, verified: true });
-      if (profile.claim_source_profile_id) await base44.asServiceRole.entities.CatererProfile.update(profile.claim_source_profile_id, { published: false, claim_status: 'claimed', claimed_profile_id: profile.id });
+      const operations = [];
+      if (profile.claim_source_profile_id) operations.push(base44.asServiceRole.entities.CatererProfile.update(profile.claim_source_profile_id, { published: false, claim_status: 'claimed', claimed_profile_id: profile.id }));
+      if (profile.created_by_id) operations.push(base44.asServiceRole.entities.User.update(profile.created_by_id, { account_type: 'caterer', account_status: 'verified' }));
+      await Promise.all(operations);
       return Response.json({ item });
     }
     if (body.action !== 'claim') return Response.json({ error: 'Action inconnue' }, { status: 400 });
