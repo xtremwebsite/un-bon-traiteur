@@ -8,6 +8,23 @@ export default async function(req: Request): Promise<Response> {
     const body = await req.json();
     const profileId = String(body.profile_id || '');
     if (!/^[a-f0-9]{24}$/i.test(profileId)) return Response.json({ error: 'Identifiant de fiche invalide' }, { status: 400 });
+    if (body.action === 'mark_claimable') {
+      if (user.role !== 'admin') return Response.json({ error: 'Accès refusé' }, { status: 403 });
+      const profiles = await base44.asServiceRole.entities.CatererProfile.filter({ id: profileId }, '-created_date', 1);
+      const profile = profiles[0];
+      if (!profile) return Response.json({ error: 'Fiche introuvable' }, { status: 404 });
+      let item;
+      if (profile.profile_origin === 'owner' && profile.claim_source_profile_id) {
+        const sources = await base44.asServiceRole.entities.CatererProfile.filter({ id: profile.claim_source_profile_id }, '-created_date', 1);
+        if (!sources[0]) return Response.json({ error: 'Fiche source introuvable' }, { status: 404 });
+        item = await base44.asServiceRole.entities.CatererProfile.update(sources[0].id, { status: 'approved', published: true, verified: false, claim_status: 'unclaimed', claimed_profile_id: '', claimed_by_user_id: '' });
+        await base44.asServiceRole.entities.CatererProfile.update(profile.id, { status: 'rejected', published: false, verified: false });
+      } else {
+        item = await base44.asServiceRole.entities.CatererProfile.update(profile.id, { profile_origin: 'public_source', status: 'approved', published: true, verified: false, claim_status: 'unclaimed', claim_source_profile_id: '', claimed_profile_id: '', claimed_by_user_id: '' });
+      }
+      if (profile.created_by_id && profile.profile_origin === 'owner') await base44.asServiceRole.entities.User.update(profile.created_by_id, { account_type: 'caterer', account_status: 'pending' });
+      return Response.json({ item });
+    }
     if (body.action === 'approve_profile' || body.action === 'reject_profile') {
       if (user.role !== 'admin') return Response.json({ error: 'Accès refusé' }, { status: 403 });
       const profiles = await base44.asServiceRole.entities.CatererProfile.filter({ id: profileId }, '-created_date', 1);

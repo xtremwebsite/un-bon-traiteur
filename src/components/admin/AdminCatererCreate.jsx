@@ -23,5 +23,5 @@ export default function AdminCatererCreate({ onCreated }) {
     setOpen(false);
     await onCreated?.();
   };
-  return <Dialog open={open} onOpenChange={setOpen}><DialogTrigger asChild><button type="button" className="mb-5 flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-bold text-primary-foreground"><Plus size={18}/>Créer un traiteur</button></DialogTrigger><DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto"><DialogHeader><DialogTitle>Créer une fiche traiteur</DialogTitle></DialogHeader><CatererProfileForm onSave={save} submitLabel="Créer et publier la fiche"/></DialogContent></Dialog>;
+  return <Dialog open={open} onOpenChange={setOpen}><DialogTrigger asChild><button type="button" className="mb-5 flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-bold text-primary-foreground"><Plus size={18}/>Créer un traiteur</button></DialogTrigger><DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto"><DialogHeader><DialogTitle>Créer une fiche traiteur</DialogTitle></DialogHeader><CatererProfileForm onSave={save} submitLabel="Créer la fiche à revendiquer"/></DialogContent></Dialog>;
 }
