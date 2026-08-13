@@ -8,15 +8,20 @@ export default async function(req: Request): Promise<Response> {
     const body = await req.json();
     const profileId = String(body.profile_id || '');
     if (!/^[a-f0-9]{24}$/i.test(profileId)) return Response.json({ error: 'Identifiant de fiche invalide' }, { status: 400 });
-    if (body.action === 'approve_profile') {
+    if (body.action === 'approve_profile' || body.action === 'reject_profile') {
       if (user.role !== 'admin') return Response.json({ error: 'Accès refusé' }, { status: 403 });
       const profiles = await base44.asServiceRole.entities.CatererProfile.filter({ id: profileId }, '-created_date', 1);
       const profile = profiles[0];
-      if (!profile) return Response.json({ error: 'Fiche introuvable' }, { status: 404 });
-      const item = await base44.asServiceRole.entities.CatererProfile.update(profile.id, { status: 'approved', published: true, verified: true });
+      if (!profile || profile.profile_origin !== 'owner') return Response.json({ error: 'Demande de revendication introuvable' }, { status: 404 });
+      const approved = body.action === 'approve_profile';
+      const item = await base44.asServiceRole.entities.CatererProfile.update(profile.id, approved
+        ? { status: 'approved', published: true, verified: true }
+        : { status: 'rejected', published: false, verified: false });
       const operations = [];
-      if (profile.claim_source_profile_id) operations.push(base44.asServiceRole.entities.CatererProfile.update(profile.claim_source_profile_id, { published: false, claim_status: 'claimed', claimed_profile_id: profile.id }));
-      if (profile.created_by_id) operations.push(base44.asServiceRole.entities.User.update(profile.created_by_id, { account_type: 'caterer', account_status: 'verified' }));
+      if (profile.claim_source_profile_id) operations.push(base44.asServiceRole.entities.CatererProfile.update(profile.claim_source_profile_id, approved
+        ? { published: false, claim_status: 'claimed', claimed_profile_id: profile.id }
+        : { published: true, status: 'approved', claim_status: 'unclaimed', claimed_profile_id: '', claimed_by_user_id: '' }));
+      if (profile.created_by_id) operations.push(base44.asServiceRole.entities.User.update(profile.created_by_id, { account_type: 'caterer', account_status: approved ? 'verified' : 'pending' }));
       await Promise.all(operations);
       return Response.json({ item });
     }
