@@ -176,6 +176,33 @@
         "type": "string"
       }
     },
+    "service_pricing": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "included",
+              "on_request",
+              "fixed"
+            ]
+          },
+          "price": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "name",
+          "status"
+        ]
+      }
+    },
     "faq": {
       "type": "array",
       "items": {
